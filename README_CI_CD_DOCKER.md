@@ -1,5 +1,9 @@
 # Documentation CI/CD et Conteneurisation Docker
 
+
+
+
+
 Ce document décrit la mise en place du pipeline d'intégration et de livraison continues (CI/CD) et la conteneurisation Docker pour le projet de gestion de cabinet médical.
 
 ## 1. Architecture du Projet
