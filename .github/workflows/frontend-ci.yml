@@ -30,7 +30,6 @@ jobs:
           cd frontend
           npm install --legacy-peer-deps
 
-
       - name: Run Tests with Coverage
         run: |
           cd frontend
