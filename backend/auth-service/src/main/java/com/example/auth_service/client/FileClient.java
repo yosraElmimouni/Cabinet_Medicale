@@ -1,0 +1,46 @@
+package com.example.auth_service.client;
+
+import com.example.auth_service.dto.FileResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+@RequiredArgsConstructor
+public class FileClient {
+
+    private final WebClient.Builder fileWebClientBuilder;
+
+    public FileResponse uploadFile(MultipartFile file, Long ownerId, String ownerType) {
+
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        try {
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+
+            builder.part("file", file.getResource())
+                    .filename(file.getOriginalFilename())
+                    .contentType(MediaType.parseMediaType(file.getContentType()));
+
+            builder.part("ownerId", ownerId.toString());
+            builder.part("ownerType", ownerType);
+
+            return fileWebClientBuilder.build().post()
+                    .uri("/upload")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(builder.build()))
+                    .retrieve()
+                    .bodyToMono(FileResponse.class)
+                    .block();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de l'appel au file-service : " + e.getMessage());
+        }
+    }
+}
+
