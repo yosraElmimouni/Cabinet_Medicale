@@ -26,14 +26,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: |
-          cd frontend
-          npm install --legacy-peer-deps
-
-      - name: Run Tests with Coverage
-        run: npm test -- --coverage --watchAll=false --browsers=ChromeHeadless
+        run: npm install --legacy-peer-deps
         working-directory: frontend
 
+      - name: Run Tests with Coverage
+        run: npm test -- --coverage --watchAll=false --ci
+        working-directory: frontend
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -49,8 +47,3 @@ jobs:
             -Dsonar.tests=src
             -Dsonar.test.inclusions=**/*.spec.ts
             -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
-
-      - name: Build Docker Image
-        run: |
-          cd frontend
-          docker build -t medical-frontend .

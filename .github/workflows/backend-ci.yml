@@ -42,11 +42,3 @@ jobs:
             -Dsonar.projectKey=medical-clinic-backend \
             -Dsonar.projectName="Medical Clinic Backend"
         working-directory: backend
-
-
-
-      - name: Build Docker Images
-        run: |
-          cd backend
-          docker build -t medical-auth-service --build-arg SERVICE_NAME=auth-service .
-          # Vous pouvez ajouter d'autres builds ou un push vers un registre ici
