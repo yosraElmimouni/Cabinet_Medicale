@@ -38,10 +38,11 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          cd backend
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=medical-clinic-backend \
             -Dsonar.projectName="Medical Clinic Backend"
+        working-directory: backend
+
 
 
       - name: Build Docker Images

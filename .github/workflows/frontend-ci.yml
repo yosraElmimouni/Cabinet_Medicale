@@ -31,9 +31,9 @@ jobs:
           npm install --legacy-peer-deps
 
       - name: Run Tests with Coverage
-        run: |
-          cd frontend
-          npm test -- --coverage --watchAll=false
+        run: npm test -- --coverage --watchAll=false --browsers=ChromeHeadless
+        working-directory: frontend
+
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
