@@ -1,0 +1,248 @@
+<div class="appointment-container">
+  <!-- Background Médical -->
+  <div class="appointment-background">
+    <div class="medical-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+
+  <div class="appointment-content">
+    <!-- En-tête -->
+    <div class="appointment-header">
+      <div class="header-icon">
+        <i class="fas fa-calendar-plus"></i>
+      </div>
+      <h1>Prendre un Rendez-vous</h1>
+      <p>Choisissez la date et l'horaire qui vous conviennent</p>
+    </div>
+
+    <!-- Processus en Étapes -->
+    <div class="appointment-steps">
+      <div class="steps-indicator">
+        <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+          <div class="step-number">1</div>
+          <span>Spécialité</span>
+        </div>
+        <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+          <div class="step-number">2</div>
+          <span>Médecin</span>
+        </div>
+        <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+          <div class="step-number">3</div>
+          <span>Date & Heure</span>
+        </div>
+        <div class="step" [class.active]="currentStep === 4" [class.completed]="currentStep > 4">
+          <div class="step-number">4</div>
+          <span>Confirmation</span>
+        </div>
+      </div>
+
+      <!-- Étape 1: Choix de la Spécialité -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <h2>Choisissez une Spécialité</h2>
+        <p>Sélectionnez le domaine médical correspondant à votre besoin</p>
+        
+        <div class="specialties-grid">
+          <div class="specialty-card" 
+               *ngFor="let specialty of specialties"
+               [class.selected]="selectedSpecialty === specialty.id"
+               (click)="selectSpecialty(specialty.id)">
+            <div class="specialty-icon">
+              <i [class]="specialty.icon"></i>
+            </div>
+            <h3>{{ specialty.name }}</h3>
+            <p>{{ specialty.description }}</p>
+            <div class="availability">
+              <i class="fas fa-clock"></i>
+              {{ specialty.availability }}
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-next" (click)="nextStep()" [disabled]="!selectedSpecialty">
+            Continuer
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2: Choix du Médecin -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <h2>Choisissez un Médecin</h2>
+        <p>Nos spécialistes sont à votre disposition</p>
+        
+        <div class="doctors-grid">
+          <div class="doctor-card" 
+               *ngFor="let doctor of filteredDoctors"
+               [class.selected]="selectedDoctor === doctor.id"
+               (click)="selectDoctor(doctor.id)">
+            <div class="doctor-avatar">
+              <img [src]="doctor.avatar" [alt]="doctor.name" />
+              <div class="online-indicator" [class.online]="doctor.online"></div>
+            </div>
+            <div class="doctor-info">
+              <h3>Dr. {{ doctor.name }}</h3>
+              <p class="specialty">{{ doctor.specialty }}</p>
+              <div class="rating">
+                <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]"
+                   [class.filled]="star <= doctor.rating"></i>
+                <span>({{ doctor.reviews }} avis)</span>
+              </div>
+              <p class="experience">{{ doctor.experience }}</p>
+            </div>
+            <div class="doctor-actions">
+              <button class="btn-select">Sélectionner</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-prev" (click)="prevStep()">
+            <i class="fas fa-arrow-left"></i>
+            Retour
+          </button>
+          <button class="btn-next" (click)="nextStep()" [disabled]="!selectedDoctor">
+            Continuer
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 3: Choix de la Date et Heure -->
+      <div class="step-content" *ngIf="currentStep === 3">
+        <h2>Choisissez la Date et l'Heure</h2>
+        <p>Sélectionnez un créneau disponible</p>
+        
+        <div class="datetime-selection">
+          <!-- Calendrier -->
+          <div class="calendar-section">
+            <h3>Date</h3>
+            <div class="calendar">
+              <div class="calendar-header">
+                <button class="nav-btn" (click)="prevMonth()">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="current-month">{{ currentMonth }}</span>
+                <button class="nav-btn" (click)="nextMonth()">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+              <div class="calendar-grid">
+                <div class="day-name" *ngFor="let day of dayNames">{{ day }}</div>
+                <div class="day" 
+                     *ngFor="let day of calendarDays"
+                     [class.disabled]="!day.available"
+                     [class.selected]="selectedDate === day.date"
+                     (click)="selectDate(day.date, day.available)">
+                  <span class="date">{{ day.number }}</span>
+                  <div class="availability-dots" *ngIf="day.available">
+                    <span class="dot" *ngFor="let dot of getAvailabilityDots(day.slots)"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Horaires -->
+          <div class="time-section">
+            <h3>Horaire</h3>
+            <div class="time-slots">
+              <div class="time-slot" 
+                   *ngFor="let slot of availableSlots"
+                   [class.selected]="selectedTime === slot.time"
+                   (click)="selectTime(slot.time)">
+                <span class="time">{{ slot.time }}</span>
+                <span class="period">{{ slot.period }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-prev" (click)="prevStep()">
+            <i class="fas fa-arrow-left"></i>
+            Retour
+          </button>
+          <button class="btn-next" (click)="nextStep()" [disabled]="!selectedDate || !selectedTime">
+            Continuer
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 4: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 4">
+        <h2>Confirmation du Rendez-vous</h2>
+        
+        <div class="appointment-summary">
+          <div class="summary-card">
+            <div class="summary-header">
+              <i class="fas fa-calendar-check"></i>
+              <h3>Récapitulatif</h3>
+            </div>
+            
+            <div class="summary-details">
+              <div class="detail-item">
+                <span class="label">Spécialité :</span>
+                <span class="value">{{ getSpecialtyName(selectedSpecialty) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Médecin :</span>
+                <span class="value">Dr. {{ getDoctorName(selectedDoctor) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Date :</span>
+                <span class="value">{{ selectedDate | date:'fullDate':'':'fr' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Heure :</span>
+                <span class="value">{{ selectedTime }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Durée :</span>
+                <span class="value">30 minutes</span>
+              </div>
+            </div>
+
+            <div class="appointment-notes">
+              <h4>Informations importantes :</h4>
+              <ul>
+                <li>Veuillez arriver 15 minutes avant l'heure du rendez-vous</li>
+                <li>Apportez vos documents médicaux et ordonnances</li>
+                <li>Annulation possible jusqu'à 24h avant le rendez-vous</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-prev" (click)="prevStep()">
+            <i class="fas fa-arrow-left"></i>
+            Modifier
+          </button>
+          <button class="btn-confirm" (click)="confirmAppointment()">
+            <i class="fas fa-check"></i>
+            Confirmer le Rendez-vous
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assistance Rapide -->
+    <div class="quick-assistance">
+      <div class="assistance-card">
+        <i class="fas fa-headset"></i>
+        <div class="assistance-content">
+          <h4>Besoin d'aide ?</h4>
+          <p>Notre équipe est disponible pour vous accompagner</p>
+        </div>
+        <button class="btn-assistance">
+          Nous Contacter
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

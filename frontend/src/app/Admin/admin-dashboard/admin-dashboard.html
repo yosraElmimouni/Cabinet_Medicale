@@ -1,0 +1,80 @@
+<div class="dashboard-container">
+  <!-- Background Effects -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <div class="floating-icon"><i class="fas fa-clinic-medical"></i></div>
+      <div class="floating-icon"><i class="fas fa-user-md"></i></div>
+      <div class="floating-icon"><i class="fas fa-user-nurse"></i></div>
+      <div class="floating-icon"><i class="fas fa-chart-line"></i></div>
+      <div class="floating-icon"><i class="fas fa-euro-sign"></i></div>
+      <div class="floating-icon"><i class="fas fa-users"></i></div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content">
+    
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <div class="welcome-content">
+        <h1>Bonjour, {{ adminName }} 👋</h1>
+        <p>Bienvenue sur votre tableau de bord d'administration. Visualisez les statistiques de votre cabinet.</p>
+        <div class="current-time">
+          <i class="fas fa-clock"></i>
+          <span>{{ currentDate }} • {{ currentTime }}</span>
+        </div>
+        
+        <!-- Info cabinet unique -->
+        <div *ngIf="cabinet" class="cabinet-info">
+          <h3>
+            <i class="fas fa-clinic-medical"></i>
+            {{ cabinet.nomCabinet }}
+          </h3>
+          <p class="cabinet-details">
+            <i class="fas fa-map-marker-alt"></i> {{ cabinet.adresseCabinet }}
+          </p>
+        </div>
+      </div>
+      
+      <div class="quick-actions-header">
+        <button class="action-btn primary" (click)="goToMedecins()">
+          <i class="fas fa-user-md"></i>
+          <span>Médecins</span>
+        </button>
+        <button class="action-btn primary" (click)="goToSecretaires()">
+          <i class="fas fa-user-nurse"></i>
+          <span>Secrétaires</span>
+        </button>
+        <button class="action-btn secondary" (click)="generateReport()">
+          <i class="fas fa-file-export"></i>
+          <span>Rapport</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Stats Grid -->
+    <section class="stats-grid">
+      <div *ngFor="let stat of stats" 
+           class="stat-card">
+        <div class="stat-icon" [style.background]="'rgba(' + hexToRgb(stat.color) + ', 0.2)'">
+          <i [class]="stat.icon" [style.color]="stat.color"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">
+            {{ stat.title === 'Revenus' ? formatCurrency(stat.value) : stat.value.toLocaleString('fr-FR') }}
+          </div>
+          <div class="stat-label">{{ stat.description }}</div>
+          <div class="stat-trend" [ngClass]="stat.trend >= 0 ? 'positive' : 'negative'">
+            <i [class]="stat.trend >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+            <span>{{ Math.abs(stat.trend) }}% {{ stat.trendLabel }}</span>
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+    </section>
+
+    <!-- Contenu additionnel (activités récentes, graphiques) -->
+    
+  </div>
+</div>

@@ -1,0 +1,370 @@
+<div class="prescriptions-container">
+  <!-- Background Animé -->
+  <div class="prescriptions-background">
+    <div class="floating-elements">
+      <div class="floating-icon">💊</div>
+      <div class="floating-icon">📋</div>
+      <div class="floating-icon">🩺</div>
+      <div class="floating-icon">📝</div>
+      <div class="floating-icon">🏥</div>
+      <div class="floating-icon">⚕️</div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="prescriptions-content">
+    <!-- Header -->
+    <header class="prescriptions-header">
+      <div class="header-left">
+        <h1><i class="fas fa-prescription"></i> Gestion des Prescriptions</h1>
+        <p>Prescriptions médicales et ordonnances</p>
+      </div>
+      <button class="btn-new-prescription" (click)="newPrescription()">
+        <i class="fas fa-plus-circle"></i>
+        Nouvelle Prescription
+      </button>
+    </header>
+
+    <!-- Barre de Contrôle -->
+    <div class="control-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          placeholder="Rechercher une prescription..." 
+          [(ngModel)]="searchQuery"
+          (input)="getFilteredPrescriptions()"
+        >
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label><i class="fas fa-filter"></i> Statut</label>
+          <select [(ngModel)]="filterStatut" (change)="getFilteredPrescriptions()">
+            <option value="all">Tous les statuts</option>
+            <option value="en_cours">En cours</option>
+            <option value="terminee">Terminées</option>
+            <option value="suspendue">Suspendues</option>
+            <option value="renouvelable">Renouvelables</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><i class="fas fa-pills"></i> Type</label>
+          <select [(ngModel)]="filterType" (change)="getFilteredPrescriptions()">
+            <option value="all">Tous les types</option>
+            <option value="normale">Normale</option>
+            <option value="renouvellement">Renouvellement</option>
+            <option value="urgence">Urgence</option>
+            <option value="chronique">Chronique</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><i class="fas fa-sort"></i> Trier par</label>
+          <select [(ngModel)]="sortBy" (change)="getFilteredPrescriptions()">
+            <option value="date_desc">Date ↓</option>
+            <option value="date_asc">Date ↑</option>
+            <option value="patient">Patient</option>
+            <option value="expiration">Expiration</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques Rapides -->
+    <div class="quick-stats">
+      <div class="stat-badge">
+        <div class="stat-value">{{ getTotalPrescriptions() }}</div>
+        <div class="stat-label">Prescriptions total</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getActivePrescriptions() }}</div>
+        <div class="stat-label">En cours</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getExpiringSoon() }}</div>
+        <div class="stat-label">Expirent bientôt</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getRenewablePrescriptions() }}</div>
+        <div class="stat-label">Renouvelables</div>
+      </div>
+    </div>
+
+    <!-- Liste des Prescriptions -->
+    <div class="prescriptions-list">
+      <div *ngFor="let prescription of getFilteredPrescriptions()" class="prescription-card">
+        <div class="prescription-header">
+          <div class="prescription-info">
+            <div class="prescription-number">
+              <i class="fas fa-file-prescription"></i>
+              <span>{{ prescription.numero }}</span>
+            </div>
+            <div class="prescription-meta">
+              <span class="prescription-date">
+                <i class="fas fa-calendar"></i>
+                {{ prescription.datePrescription | date:'dd/MM/yyyy' }}
+              </span>
+              <span class="prescription-expiration" [class.expiring]="isExpiringSoon(prescription.dateExpiration)" [class.expired]="isExpired(prescription.dateExpiration)">
+                <i class="fas fa-clock"></i>
+                Valide jusqu'au {{ prescription.dateExpiration | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="prescription-status">
+            <span class="status-badge" [style.background]="getStatutColor(prescription.statut)">
+              {{ getStatutLabel(prescription.statut) }}
+            </span>
+            <span class="type-badge" [style.background]="getTypeColor(prescription.type)">
+              {{ getTypeLabel(prescription.type) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="prescription-body">
+          <div class="patient-info">
+            <div class="patient-avatar">{{ prescription.patientName.charAt(0) }}</div>
+            <div>
+              <div class="patient-name">{{ prescription.patientName }}</div>
+              <div class="prescribing-doctor">
+                <i class="fas fa-user-md"></i>
+                {{ prescription.medecin }}
+              </div>
+            </div>
+          </div>
+
+          <div class="medicaments-list">
+            <div *ngFor="let medicament of prescription.medicaments" class="medicament-item">
+              <div class="medicament-icon">
+                <i [class]="'fas ' + getFormeIcon(medicament.forme)"></i>
+              </div>
+              <div class="medicament-details">
+                <div class="medicament-name">{{ medicament.nom }}</div>
+                <div class="medicament-specs">
+                  <span class="dci">{{ medicament.dci }}</span>
+                  <span class="dosage">{{ medicament.dosage }}</span>
+                  <span class="quantity">{{ medicament.quantite }} {{ medicament.forme }}</span>
+                </div>
+                <div class="medicament-posologie">
+                  <i class="fas fa-info-circle"></i>
+                  {{ medicament.posologie }}
+                  <span *ngIf="medicament.duree > 0"> - {{ medicament.duree }} jours</span>
+                </div>
+                <div class="medicament-renewable" *ngIf="medicament.renouvelable">
+                  <i class="fas fa-redo"></i>
+                  Renouvellements: {{ medicament.renouvellements }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prescription-notes" *ngIf="prescription.observations">
+            <i class="fas fa-sticky-note"></i>
+            {{ prescription.observations }}
+          </div>
+        </div>
+
+        <div class="prescription-actions">
+          <button class="btn-view" (click)="viewPrescription(prescription)" title="Voir détails">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="btn-edit" (click)="editPrescription(prescription)" title="Modifier">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-print" (click)="printPrescription(prescription)" title="Imprimer">
+            <i class="fas fa-print"></i>
+          </button>
+          <button class="btn-renew" (click)="renewPrescription(prescription)" title="Renouveler" *ngIf="prescription.statut === 'en_cours'">
+            <i class="fas fa-redo"></i>
+          </button>
+          <button class="btn-suspend" (click)="suspendPrescription(prescription.id)" title="Suspendre" *ngIf="prescription.statut === 'en_cours'">
+            <i class="fas fa-pause"></i>
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="getFilteredPrescriptions().length === 0" class="no-prescriptions">
+        <i class="fas fa-file-prescription"></i>
+        <h3>Aucune prescription trouvée</h3>
+        <p>Créez votre première prescription</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Prescription -->
+  <div *ngIf="showPrescriptionModal" class="prescription-modal-overlay">
+    <div class="prescription-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-file-prescription"></i>
+          {{ isEditing ? 'Modifier la prescription' : 'Nouvelle prescription' }}
+        </h3>
+        <button class="btn-close-modal" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form [formGroup]="prescriptionForm" (ngSubmit)="savePrescription()">
+        <div class="modal-body">
+          <!-- Sélection du patient -->
+          <div class="form-section">
+            <h4><i class="fas fa-user-injured"></i> Patient</h4>
+            <div class="form-group">
+              <select formControlName="patientId" required>
+                <option value="">Sélectionner un patient</option>
+                <option *ngFor="let patient of patients" [value]="patient.id">
+                  {{ patient.name }} ({{ patient.age }} ans)
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Type de prescription -->
+          <div class="form-section">
+            <h4><i class="fas fa-tag"></i> Type de prescription</h4>
+            <div class="type-selector">
+              <label class="type-option" [class.active]="prescriptionForm.get('type')?.value === 'normale'">
+                <input type="radio" formControlName="type" value="normale" hidden>
+                <i class="fas fa-prescription"></i>
+                <span>Normale</span>
+              </label>
+              <label class="type-option" [class.active]="prescriptionForm.get('type')?.value === 'chronique'">
+                <input type="radio" formControlName="type" value="chronique" hidden>
+                <i class="fas fa-history"></i>
+                <span>Chronique</span>
+              </label>
+              <label class="type-option" [class.active]="prescriptionForm.get('type')?.value === 'urgence'">
+                <input type="radio" formControlName="type" value="urgence" hidden>
+                <i class="fas fa-ambulance"></i>
+                <span>Urgence</span>
+              </label>
+              <label class="type-option" [class.active]="prescriptionForm.get('type')?.value === 'renouvellement'">
+                <input type="radio" formControlName="type" value="renouvellement" hidden>
+                <i class="fas fa-redo"></i>
+                <span>Renouvellement</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Médicaments -->
+          <div class="form-section">
+            <div class="section-header">
+              <h4><i class="fas fa-pills"></i> Médicaments</h4>
+              <button type="button" class="btn-add-medicament" (click)="addMedicament()">
+                <i class="fas fa-plus"></i> Ajouter un médicament
+              </button>
+            </div>
+            
+            <div class="medicaments-form" formArrayName="medicaments">
+              <div *ngFor="let medicament of medicaments.controls; let i = index" [formGroupName]="i" class="medicament-form-card">
+                <div class="medicament-header">
+                  <h5>Médicament {{ i + 1 }}</h5>
+                  <button type="button" class="btn-remove-medicament" (click)="removeMedicament(i)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                
+                <div class="medicament-form-grid">
+                  <div class="form-group">
+                    <label>Nom commercial *</label>
+                    <input type="text" formControlName="nom" placeholder="ex: Doliprane" list="medicaments-list">
+                    <datalist id="medicaments-list">
+                      <option *ngFor="let med of medicamentsDisponibles" [value]="med.nom">{{ med.dci }}</option>
+                    </datalist>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>DCI *</label>
+                    <input type="text" formControlName="dci" placeholder="Dénomination Commune Internationale">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Dosage *</label>
+                    <input type="text" formControlName="dosage" placeholder="ex: 500mg">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Forme</label>
+                    <select formControlName="forme">
+                      <option value="comprime">Comprimé</option>
+                      <option value="sirop">Sirop</option>
+                      <option value="injection">Injection</option>
+                      <option value="gel">Gel</option>
+                      <option value="pommade">Pommade</option>
+                      <option value="autre">Autre</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Quantité *</label>
+                    <input type="number" formControlName="quantite" min="1" placeholder="ex: 30">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Posologie *</label>
+                    <input type="text" formControlName="posologie" placeholder="ex: 1 comprimé matin et soir">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Durée (jours) *</label>
+                    <input type="number" formControlName="duree" min="1" placeholder="ex: 30">
+                  </div>
+                  
+                  <div class="form-group checkbox-group">
+                    <label>
+                      <input type="checkbox" formControlName="renouvelable">
+                      Renouvelable
+                    </label>
+                  </div>
+                  
+                  <div class="form-group" *ngIf="medicament.get('renouvelable')?.value">
+                    <label>Renouvellements</label>
+                    <input type="number" formControlName="renouvellements" min="0" placeholder="Nombre de renouvellements">
+                  </div>
+                  
+                  <div class="form-group full-width">
+                    <label>Remarques</label>
+                    <textarea formControlName="remarques" rows="2" placeholder="Instructions particulières..."></textarea>
+                  </div>
+                </div>
+              </div>
+              
+              <div *ngIf="medicaments.length === 0" class="no-medicaments">
+                <i class="fas fa-pills"></i>
+                <p>Aucun médicament ajouté</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instructions et observations -->
+          <div class="form-section">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Instructions au patient</label>
+                <textarea formControlName="instructions" rows="3" placeholder="Instructions particulières pour la prise des médicaments..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Observations médicales</label>
+                <textarea formControlName="observations" rows="3" placeholder="Observations importantes pour le suivi..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeModal()">
+            Annuler
+          </button>
+          <button *ngIf="isEditing && selectedPrescription" type="button" class="btn-delete" (click)="deletePrescription(selectedPrescription.id)">
+            Supprimer
+          </button>
+          <button type="submit" class="btn-save" [disabled]="!prescriptionForm.valid || medicaments.length === 0">
+            {{ isEditing ? 'Mettre à jour' : 'Créer la prescription' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

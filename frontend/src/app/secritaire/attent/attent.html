@@ -1,0 +1,251 @@
+<div class="attent-container">
+  <!-- Background Animé -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <div class="floating-icon"><i class="fas fa-clock"></i></div>
+      <div class="floating-icon"><i class="fas fa-users"></i></div>
+      <div class="floating-icon"><i class="fas fa-user-clock"></i></div>
+      <div class="floating-icon"><i class="fas fa-hourglass-half"></i></div>
+      <div class="floating-icon"><i class="fas fa-couch"></i></div>
+      <div class="floating-icon"><i class="fas fa-bell"></i></div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Message d'erreur -->
+    <div class="error-message" *ngIf="errorMessage" style="background: #fee; color: #c33; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+    </div>
+
+    <!-- Indicateur de chargement -->
+    <div *ngIf="isLoading" style="text-align: center; padding: 2rem;">
+      <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #4CAF50;"></i>
+      <p>Chargement des rendez-vous en attente...</p>
+    </div>
+
+    <!-- Section de Bienvenue -->
+    <section class="welcome-section">
+      <div class="welcome-content">
+        <h1>Salle d'Attente ⏱️</h1>
+        <p>Gestion simplifiée des patients</p>
+        <div class="current-time">
+          <i class="fas fa-clock"></i>
+          {{ currentTime | date:'HH:mm' }} • {{ currentTime | date:'EEEE d MMMM yyyy' }}
+        </div>
+      </div>
+      <div class="quick-actions-header">
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Rechercher un patient..." 
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            class="search-input">
+        </div>
+        <button class="action-btn primary" (click)="appelerProchainPatient()">
+          <i class="fas fa-bell"></i>
+          Patient Suivant
+        </button>
+        <button class="action-btn secondary" (click)="rafraichirListe()">
+          <i class="fas fa-sync-alt"></i>
+          Actualiser
+        </button>
+      </div>
+    </section>
+
+    <!-- Statistiques Rapides -->
+    <section class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-card total-waiting">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ stats.totalEnAttente }}</div>
+            <div class="stat-label">En Attente</div>
+          </div>
+        </div>
+
+        <div class="stat-card average-wait">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ stats.tempsMoyenAttente }} min</div>
+            <div class="stat-label">Temps Moyen</div>
+          </div>
+        </div>
+
+        <div class="stat-card next-patient">
+          <div class="stat-icon">
+            <i class="fas fa-user-clock"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ stats.prochainPatient }}</div>
+            <div class="stat-label">Prochain</div>
+          </div>
+        </div>
+
+        <div class="stat-card doctors-available">
+          <div class="stat-icon">
+            <i class="fas fa-user-md"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ stats.medecinsDisponibles }}</div>
+            <div class="stat-label">Médecins</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Patient Actuel -->
+    <div class="current-patient-section" *ngIf="patientActuel">
+      <div class="current-patient-header">
+        <h3><i class="fas fa-star"></i> PATIENT ACTUEL</h3>
+      </div>
+      <div class="current-patient-card">
+        <div class="patient-info-large">
+          <div class="patient-avatar-large">
+            {{ patientActuel.prenom.charAt(0) }}
+          </div>
+          <div class="patient-details-large">
+            <h2>{{ patientActuel.prenom }} {{ patientActuel.nom }}</h2>
+            <div class="patient-meta-large">
+              <span class="age">{{ patientActuel.age }} ans</span>
+              <span class="medecin">{{ patientActuel.medecin }}</span>
+              <span class="attente">{{ formatTempsAttente(patientActuel.tempsAttente) }} d'attente</span>
+            </div>
+          </div>
+        </div>
+        <div class="patient-actions-large">
+          <button class="action-btn primary" (click)="demarrerConsultation(patientActuel)">
+            <i class="fas fa-play"></i> Démarrer
+          </button>
+          <button class="action-btn whatsapp" (click)="envoyerWhatsApp(patientActuel)">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label>Urgence:</label>
+        <select [(ngModel)]="filterUrgence" (change)="applyFilters()">
+          <option value="">Toutes</option>
+          <option value="faible">Faible</option>
+          <option value="moyenne">Moyenne</option>
+          <option value="élevée">Élevée</option>
+          <option value="critique">Critique</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Statut:</label>
+        <select [(ngModel)]="filterStatut" (change)="applyFilters()">
+          <option value="">Tous</option>
+          <option value="en-attente">En attente</option>
+          <option value="appelé">Appelé</option>
+          <option value="en-consultation">En consultation</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Liste des Patients -->
+    <section class="waiting-section">
+      <div class="section-header">
+        <h3><i class="fas fa-list"></i> Liste d'Attente ({{ filteredPatients.length }})</h3>
+      </div>
+
+      <!-- Tableau -->
+      <div class="waiting-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Médecin</th>
+              <th>Arrivée</th>
+              <th>Attente</th>
+              <th>Urgence</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let patient of filteredPatients" 
+                [class]="'urgence-' + getUrgenceClass(patient.urgence)"
+                [class.patient-actuel]="patient.statut === 'appelé'">
+              
+              <td class="patient-cell">
+                <div class="patient-info">
+                  <div class="patient-avatar-small">
+                    {{ patient.prenom.charAt(0) }}
+                  </div>
+                  <div>
+                    <strong>{{ patient.prenom }} {{ patient.nom }}</strong>
+                    <div class="patient-details">
+                      <span class="age">{{ patient.age }} ans</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              
+              <td class="medecin-cell">
+                {{ patient.medecin }}
+              </td>
+              
+              <td class="time-cell">
+                {{ patient.heureArrivee | date:'HH:mm' }}
+              </td>
+              
+              <td class="wait-time-cell">
+                <div class="wait-time" [class.long-wait]="patient.tempsAttente > 30">
+                  {{ formatTempsAttente(patient.tempsAttente) }}
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="getProgressWidth(patient.tempsAttente)"></div>
+                </div>
+              </td>
+              
+              <td>
+                <span class="urgence-badge" [class]="getUrgenceClass(patient.urgence)">
+                  {{ patient.urgence }}
+                </span>
+              </td>
+              
+              <td>
+                <span class="statut-badge" [class]="patient.statut">
+                  {{ getStatutText(patient.statut) }}
+                </span>
+              </td>
+              
+              <td class="actions-cell">
+                <button class="icon-btn call" 
+                        title="Appeler" 
+                        (click)="appelerPatient(patient)"
+                        [disabled]="patient.statut !== 'en-attente'">
+                  <i class="fas fa-bell"></i>
+                </button>
+                <button class="icon-btn whatsapp" 
+                        title="WhatsApp" 
+                        (click)="envoyerWhatsApp(patient)"
+                        [disabled]="!patient.telephone">
+                  <i class="fab fa-whatsapp"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Message si vide -->
+      <div class="no-patients" *ngIf="filteredPatients.length === 0">
+        <i class="fas fa-couch"></i>
+        <h4>Salle d'attente vide</h4>
+        <p>Aucun patient ne correspond aux critères</p>
+      </div>
+    </section>
+  </div>
+</div>

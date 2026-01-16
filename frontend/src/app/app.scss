@@ -1,0 +1,11 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  background: #f8f9fa;
+  min-height: calc(100vh - 140px); // Hauteur totale moins header et footer
+}

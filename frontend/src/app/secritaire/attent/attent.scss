@@ -1,0 +1,2473 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+.attent-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(28, 6, 52, 0.95) 0%, rgba(43, 77, 135, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+
+  .dashboard-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+
+    .floating-elements {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+
+      .floating-icon {
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.1;
+        animation: float 8s ease-in-out infinite;
+
+        &:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        &:nth-child(2) { top: 25%; right: 8%; animation-delay: 1s; }
+        &:nth-child(3) { top: 60%; left: 3%; animation-delay: 2s; }
+        &:nth-child(4) { top: 70%; right: 5%; animation-delay: 3s; }
+        &:nth-child(5) { bottom: 20%; left: 12%; animation-delay: 4s; }
+        &:nth-child(6) { bottom: 15%; right: 15%; animation-delay: 5s; }
+      }
+    }
+
+    .pulse-effect {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+      animation: pulse 4s ease-out infinite;
+    }
+  }
+
+  .dashboard-content {
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}
+
+// Section de Bienvenue
+.welcome-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 2rem 0 3rem 0;
+
+  .welcome-content {
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .current-time {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #94a3b8;
+      font-size: 0.9rem;
+
+      i {
+        color: #8B5CF6;
+      }
+    }
+  }
+
+  .quick-actions-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+
+    .search-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      i {
+        position: absolute;
+        left: 1rem;
+        color: #94a3b8;
+        z-index: 2;
+      }
+
+      .search-input {
+        padding: 1rem 1rem 1rem 3rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: white;
+        font-size: 0.9rem;
+        width: 300px;
+        transition: all 0.3s ease;
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #8B5CF6;
+          background: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+      }
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+
+      &.primary {
+        background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+        color: white;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      &.secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+          transform: translateY(-2px);
+        }
+      }
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Section Statistiques
+.stats-section {
+  margin-bottom: 3rem;
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+      }
+
+      &:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+
+        &::before {
+          left: 100%;
+        }
+      }
+
+      &.total-waiting {
+        border-left: 4px solid #8B5CF6;
+      }
+
+      &.average-wait {
+        border-left: 4px solid #F59E0B;
+      }
+
+      &.next-patient {
+        border-left: 4px solid #10B981;
+      }
+
+      &.doctors-available {
+        border-left: 4px solid #3B82F6;
+      }
+
+      .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+      }
+
+      .stat-content {
+        flex: 1;
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 800;
+          margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+          color: #cbd5e1;
+          font-size: 0.9rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .stat-trend {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #94a3b8;
+
+          &.positive {
+            color: #10B981;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Section Attente
+.waiting-section {
+  margin-bottom: 3rem;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .view-options {
+      display: flex;
+      gap: 0.5rem;
+
+      .view-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &.active {
+          background: #8B5CF6;
+          border-color: #8B5CF6;
+        }
+
+        &:hover:not(.active) {
+          background: rgba(255, 255, 255, 0.15);
+        }
+      }
+    }
+  }
+}
+
+// Filtres
+.filters-section {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    select {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 0.9rem;
+
+      &:focus {
+        outline: none;
+        border-color: #8B5CF6;
+      }
+
+      option {
+        background: #1a1a1a;
+        color: white;
+      }
+    }
+  }
+}
+
+// Tableau d'Attente
+.waiting-table {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.1);
+      font-weight: 600;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+
+    td {
+      color: white;
+    }
+
+    tr {
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      &.urgence-normal {
+        border-left: 4px solid #10B981;
+      }
+
+      &.urgence-urgent {
+        border-left: 4px solid #F59E0B;
+      }
+
+      &.urgence-tres-urgent {
+        border-left: 4px solid #EF4444;
+      }
+    }
+
+    .patient-cell {
+      .patient-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .patient-avatar-small {
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
+
+        .patient-details {
+          display: flex;
+          gap: 0.75rem;
+          font-size: 0.8rem;
+          color: #94a3b8;
+          margin-top: 0.25rem;
+
+          .cin, .age {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+          }
+        }
+      }
+    }
+
+    .medecin-cell {
+      .specialite {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+      }
+    }
+
+    .wait-time-cell {
+      .wait-time {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+
+        &.long-wait {
+          color: #EF4444;
+        }
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #10B981, #8B5CF6);
+          border-radius: 3px;
+          transition: width 0.3s ease;
+        }
+      }
+    }
+
+    .urgence-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.normal {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      &.urgent {
+        background: rgba(245, 158, 11, 0.2);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      &.tres-urgent {
+        background: rgba(239, 68, 68, 0.2);
+        color: #EF4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+    }
+
+    .statut-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.en-attente {
+        background: rgba(245, 158, 11, 0.2);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      &.appele {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3B82F6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      &.en-consultation {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 0.5rem;
+
+      .icon-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: white;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.15);
+          transform: scale(1.1);
+
+          &.call {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #10B981;
+          }
+
+          &.start {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #3B82F6;
+          }
+
+          &.edit {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: #8B5CF6;
+          }
+
+          &.cancel {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #EF4444;
+          }
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Grille d'Attente
+.waiting-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+// Carte Patient
+.patient-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &.urgence-normal {
+    border-left: 4px solid #10B981;
+  }
+
+  &.urgence-urgent {
+    border-left: 4px solid #F59E0B;
+  }
+
+  &.urgence-tres-urgent {
+    border-left: 4px solid #EF4444;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+
+    .patient-avatar {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .patient-main-info {
+      flex: 1;
+
+      h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .cin, .age {
+        font-size: 0.8rem;
+        color: #94a3b8;
+      }
+    }
+
+    .urgence-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+
+      &.normal {
+        background: #10B981;
+      }
+
+      &.urgent {
+        background: #F59E0B;
+      }
+
+      &.tres-urgent {
+        background: #EF4444;
+        animation: pulse 2s infinite;
+      }
+    }
+  }
+
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+
+      i {
+        color: #8B5CF6;
+        width: 16px;
+      }
+
+      .long-wait {
+        color: #EF4444;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .progress-section {
+    margin-bottom: 1rem;
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10B981, #8B5CF6);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+      }
+    }
+
+    .progress-text {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-align: center;
+    }
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    .statut-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.en-attente {
+        background: rgba(245, 158, 11, 0.2);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      &.appele {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3B82F6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      &.en-consultation {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+    }
+
+    .actions-section {
+      display: flex;
+      gap: 0.5rem;
+
+      .icon-btn-small {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: white;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.7rem;
+
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.15);
+          transform: scale(1.1);
+
+          &.call {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #10B981;
+          }
+
+          &.start {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #3B82F6;
+          }
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Section Médecins
+.doctors-section {
+  margin-bottom: 3rem;
+
+  .section-header {
+    margin-bottom: 2rem;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white;
+    }
+  }
+
+  .doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+// Carte Médecin
+.doctor-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+
+  &.disponible {
+    border-left: 4px solid #10B981;
+  }
+
+  &.en-consultation {
+    border-left: 4px solid #F59E0B;
+  }
+
+  &.hors-ligne {
+    border-left: 4px solid #6B7280;
+    opacity: 0.7;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .doctor-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .doctor-avatar {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .doctor-info {
+      flex: 1;
+
+      h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .specialite {
+        font-size: 0.9rem;
+        color: #94a3b8;
+      }
+    }
+
+    .doctor-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.disponible {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      &.en-consultation {
+        background: rgba(245, 158, 11, 0.2);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      &.hors-ligne {
+        background: rgba(107, 114, 128, 0.2);
+        color: #6B7280;
+        border: 1px solid rgba(107, 114, 128, 0.3);
+      }
+    }
+  }
+
+  .doctor-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+
+    .stat {
+      text-align: center;
+
+      .stat-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .doctor-actions {
+    .btn-small {
+      width: 100%;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+
+      &.primary {
+        background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+        color: white;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Notification d'Appel
+.call-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  color: #1a1a1a;
+  z-index: 1000;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease;
+
+  .notification-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    .notification-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      animation: ring 2s infinite;
+    }
+
+    .notification-text {
+      flex: 1;
+
+      h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #1a1a1a;
+      }
+
+      p {
+        margin-bottom: 0.25rem;
+        color: #4b5563;
+      }
+    }
+
+    .close-notification {
+      background: rgba(0, 0, 0, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #4b5563;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+}
+
+// Message Aucun Patient
+.no-patients {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+
+  i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  h4 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+
+  p {
+    margin-bottom: 2rem;
+  }
+}
+
+// Animations
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+}
+
+@keyframes ring {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+// Responsive
+@media (max-width: 1200px) {
+  .waiting-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .doctors-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 1rem;
+  }
+
+  .welcome-section {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .quick-actions-header {
+    width: 100%;
+    flex-direction: column;
+
+    .search-container {
+      width: 100%;
+
+      .search-input {
+        width: 100%;
+      }
+    }
+  }
+
+  .filters-section {
+    flex-direction: column;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .waiting-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doctors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .waiting-table {
+    overflow-x: auto;
+    
+    table {
+      min-width: 800px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-content h1 {
+    font-size: 2rem;
+  }
+
+  .patient-card .card-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .call-notification {
+    width: 90%;
+    margin: 0 auto;
+    
+    .notification-content {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+}  
+// Indicateur de priorité
+.priority-indicator {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .priority-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #cbd5e1;
+
+    i {
+      color: #8B5CF6;
+    }
+  }
+
+  .patient-actuel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #F59E0B;
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 20px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+
+    i {
+      color: #F59E0B;
+    }
+  }
+}
+
+// Numéro de priorité
+.priority-number {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #8B5CF6;
+  text-align: center;
+  position: relative;
+
+  .current-indicator {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    color: #F59E0B;
+    font-size: 0.7rem;
+  }
+}
+
+// Patient actuel
+tr.patient-actuel {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-left: 4px solid #F59E0B !important;
+
+  td {
+    color: #F59E0B !important;
+  }
+}
+
+.patient-card.patient-actuel {
+  border: 2px solid #F59E0B !important;
+  background: rgba(245, 158, 11, 0.05) !important;
+
+  .current-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #F59E0B;
+    color: #1a1a1a;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+// Badge de rôle
+.role-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &.enfant {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3B82F6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  &.adulte {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &.senior {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8B5CF6;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+  }
+
+  &.prioritaire {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+}
+
+.role-small {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  &.enfant {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3B82F6;
+  }
+
+  &.adulte {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+  }
+
+  &.senior {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8B5CF6;
+  }
+
+  &.prioritaire {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+  }
+}
+
+// Badge RDV
+.rdv-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &.confirme {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &.non-confirme {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// Niveaux d'urgence mis à jour
+tr.urgence-basse {
+  border-left: 4px solid #10B981 !important;
+}
+
+tr.urgence-moyenne {
+  border-left: 4px solid #F59E0B !important;
+}
+
+tr.urgence-haute {
+  border-left: 4px solid #EF4444 !important;
+}
+
+tr.urgence-critique {
+  border-left: 4px solid #DC2626 !important;
+  animation: pulseCritical 2s infinite;
+
+  .urgence-badge {
+    animation: pulseCritical 2s infinite;
+  }
+}
+
+.urgence-badge {
+  &.basse {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &.moyenne {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  &.haute {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  &.critique {
+    background: rgba(220, 38, 38, 0.2);
+    color: #DC2626;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+  }
+}
+
+// Bouton WhatsApp
+.icon-btn.whatsapp {
+  &:hover:not(:disabled) {
+    background: rgba(37, 211, 102, 0.2) !important;
+    border-color: rgba(37, 211, 102, 0.3) !important;
+    color: #25D366 !important;
+  }
+}
+
+.icon-btn-small.whatsapp {
+  &:hover:not(:disabled) {
+    background: rgba(37, 211, 102, 0.2) !important;
+    border-color: rgba(37, 211, 102, 0.3) !important;
+    color: #25D366 !important;
+  }
+}
+
+// Notification améliorée
+.call-notification {
+  .notification-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+
+    .action-btn.small {
+      padding: 8px 16px;
+      background: #25D366;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #1da851;
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  .patient-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0.5rem 0;
+  }
+}
+
+// Animations
+@keyframes pulseCritical {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .priority-indicator {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .filters-section {
+    .filter-group {
+      width: 100%;
+    }
+  }
+}
+// ============ NOUVEAUX STYLES ORGANISÉS ============
+
+// Section principale
+.main-section {
+  margin-top: 2rem;
+}
+
+.section-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.5rem;
+}
+
+// Carte de filtres
+.filters-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      font-size: 1.1rem;
+
+      i {
+        color: #8B5CF6;
+      }
+    }
+
+    .btn-clear {
+      background: rgba(239, 68, 68, 0.2);
+      color: #EF4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.3);
+      }
+    }
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+
+    .filter-group {
+      label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: #cbd5e1;
+        font-size: 0.9rem;
+        font-weight: 500;
+
+        i {
+          color: #8B5CF6;
+          width: 16px;
+        }
+      }
+
+      select {
+        width: 100%;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #8B5CF6;
+          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        option {
+          background: #1a1a1a;
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+// En-tête patients
+.patients-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      font-size: 1.3rem;
+
+      i {
+        color: #8B5CF6;
+      }
+    }
+
+    .patient-count {
+      background: rgba(139, 92, 246, 0.2);
+      color: #8B5CF6;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .view-options {
+      display: flex;
+      gap: 0.5rem;
+
+      .view-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #cbd5e1;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &.active {
+          background: #8B5CF6;
+          border-color: #8B5CF6;
+          color: white;
+        }
+
+        &:hover:not(.active) {
+          background: rgba(255, 255, 255, 0.15);
+        }
+      }
+    }
+
+    .btn-refresh {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: rotate(180deg);
+      }
+    }
+  }
+}
+
+// Carte info priorité
+.priority-info-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .priority-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+
+    i {
+      color: #8B5CF6;
+      font-size: 1.5rem;
+    }
+
+    .priority-text {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+
+      strong {
+        color: white;
+      }
+    }
+  }
+
+  .current-patient-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 20px;
+    color: #F59E0B;
+    font-size: 0.9rem;
+
+    i {
+      color: #F59E0B;
+    }
+  }
+}
+
+// Tableau organisé
+.table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.patients-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1200px;
+
+  th {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    text-align: left;
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    &.priority-col { width: 80px; }
+    &.patient-col { width: 200px; }
+    &.medecin-col { width: 180px; }
+    &.time-col { width: 100px; }
+    &.wait-col { width: 120px; }
+    &.urgence-col { width: 120px; }
+    &.role-col { width: 120px; }
+    &.status-col { width: 120px; }
+    &.actions-col { width: 180px; }
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  tr {
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    &.current-patient {
+      background: rgba(245, 158, 11, 0.1) !important;
+
+      td {
+        border-color: rgba(245, 158, 11, 0.2);
+      }
+    }
+
+    // Niveaux d'urgence
+    &.urgence-basse { border-left: 3px solid #10B981; }
+    &.urgence-moyenne { border-left: 3px solid #F59E0B; }
+    &.urgence-haute { border-left: 3px solid #EF4444; }
+    &.urgence-critique { 
+      border-left: 3px solid #DC2626;
+      animation: pulseCritical 2s infinite;
+    }
+  }
+
+  // Cellules spécifiques
+  .priority-cell {
+    .priority-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: white;
+      min-width: 50px;
+
+      &.high-priority { background: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.3); }
+      &.medium-priority { background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.3); }
+      &.low-priority { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+      .priority-score {
+        font-size: 0.7rem;
+        opacity: 0.8;
+        font-weight: normal;
+      }
+    }
+  }
+
+  .patient-cell {
+    .patient-info-compact {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .patient-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: white;
+
+        &.enfant { background: linear-gradient(135deg, #3B82F6, #60A5FA); }
+        &.adulte { background: linear-gradient(135deg, #10B981, #34D399); }
+        &.senior { background: linear-gradient(135deg, #8B5CF6, #A78BFA); }
+        &.prioritaire { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+      }
+
+      .patient-details {
+        .patient-name {
+          font-weight: 600;
+          color: white;
+          margin-bottom: 2px;
+        }
+
+        .patient-meta {
+          display: flex;
+          gap: 0.5rem;
+          font-size: 0.8rem;
+
+          .cin, .age {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #94a3b8;
+          }
+        }
+      }
+    }
+  }
+
+  .medecin-cell {
+    .medecin-info {
+      .medecin-name {
+        color: white;
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+
+      .medecin-specialite {
+        font-size: 0.8rem;
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .time-cell {
+    .arrival-time {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .arrival-label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+  }
+
+  .wait-cell {
+    .wait-time-display {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 6px;
+
+      &.long-wait {
+        color: #EF4444;
+      }
+    }
+
+    .progress-bar-small {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10B981, #8B5CF6);
+        border-radius: 2px;
+      }
+    }
+  }
+
+  .urgence-cell {
+    .urgence-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      width: fit-content;
+
+      &.basse {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      &.moyenne {
+        background: rgba(245, 158, 11, 0.2);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      &.haute {
+        background: rgba(239, 68, 68, 0.2);
+        color: #EF4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      &.critique {
+        background: rgba(220, 38, 38, 0.2);
+        color: #DC2626;
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        animation: pulseCritical 2s infinite;
+      }
+
+      i {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .role-cell {
+    .role-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      width: fit-content;
+
+      &.enfant {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3B82F6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      &.adulte {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      &.senior {
+        background: rgba(139, 92, 246, 0.2);
+        color: #8B5CF6;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+      }
+
+      &.prioritaire {
+        background: rgba(245, 158, 11, 0.2);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+    }
+  }
+
+  .status-cell {
+    .status-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      width: fit-content;
+
+      &.en-attente {
+        background: rgba(245, 158, 11, 0.2);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      &.appele {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3B82F6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      &.en-consultation {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        
+        .en-attente & { background: #F59E0B; }
+        .appele & { background: #3B82F6; }
+        .en-consultation & { background: #10B981; }
+      }
+    }
+  }
+
+  .actions-cell {
+    .actions-buttons {
+      display: flex;
+      gap: 0.5rem;
+
+      .action-btn-icon {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: white;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.8rem;
+
+        &:hover:not(:disabled) {
+          transform: scale(1.1);
+
+          &.call {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #10B981;
+          }
+
+          &.consult {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #3B82F6;
+          }
+
+          &.whatsapp {
+            background: rgba(37, 211, 102, 0.2);
+            border-color: rgba(37, 211, 102, 0.3);
+            color: #25D366;
+          }
+
+          &.edit {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: #8B5CF6;
+          }
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Grille de patients
+.grid-container {
+  .patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+// État vide
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .empty-content {
+    i {
+      font-size: 4rem;
+      color: #8B5CF6;
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    h4 {
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-reset {
+      background: rgba(139, 92, 246, 0.2);
+      color: #8B5CF6;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(139, 92, 246, 0.3);
+      }
+    }
+  }
+}
+
+// Notification améliorée
+.call-notification {
+  .notification-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .notification-details {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+  }
+
+  .notification-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+
+    .btn-notification {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+
+      &.whatsapp {
+        background: #25D366;
+        color: white;
+
+        &:hover {
+          background: #1da851;
+          transform: translateY(-2px);
+        }
+      }
+
+      &.close {
+        background: rgba(0, 0, 0, 0.1);
+        color: #4b5563;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
+  }
+}
+
+
+// Animation critique
+@keyframes pulseCritical {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+// Responsive
+@media (max-width: 1200px) {
+  .patients-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .patients-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .priority-info-card {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .table-container {
+    font-size: 0.9rem;
+  }
+
+  .patients-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Stat card critiques
+.stat-card.critical-patients {
+  border-left: 4px solid #DC2626;
+
+  .stat-icon {
+    background: rgba(220, 38, 38, 0.2);
+    color: #DC2626;
+  }
+
+  .stat-trend.urgent {
+    color: #DC2626;
+  }
+}
+// Section Patient Actuel
+.current-patient-section {
+  margin-bottom: 2rem;
+
+  .current-patient-header {
+    margin-bottom: 1rem;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+      color: #F59E0B;
+
+      i {
+        color: #F59E0B;
+      }
+    }
+  }
+
+  .current-patient-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: pulse 2s infinite;
+
+    .patient-info-large {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+
+      .patient-avatar-large {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: white;
+      }
+
+      .patient-details-large {
+        h2 {
+          margin: 0 0 0.5rem;
+          font-size: 1.8rem;
+          color: white;
+        }
+
+        .patient-meta-large {
+          display: flex;
+          gap: 1rem;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.8);
+
+          span {
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+          }
+        }
+      }
+    }
+
+    .patient-actions-large {
+      display: flex;
+      gap: 1rem;
+
+      .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &.primary {
+          background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+          color: white;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+          }
+        }
+
+        &.whatsapp {
+          background: #25D366;
+          color: white;
+
+          &:hover {
+            background: #1da851;
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Nouvelles classes d'urgence
+tr.urgence-faible {
+  border-left: 4px solid #10B981 !important;
+}
+
+tr.urgence-moyenne {
+  border-left: 4px solid #F59E0B !important;
+}
+
+tr.urgence-élevée {
+  border-left: 4px solid #EF4444 !important;
+}
+
+tr.urgence-critique {
+  border-left: 4px solid #DC2626 !important;
+}
+
+.urgence-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  &.faible {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &.moyenne {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  &.elevee {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  &.critique {
+    background: rgba(220, 38, 38, 0.2);
+    color: #DC2626;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    animation: pulse 2s infinite;
+  }
+}
+
+// Bouton WhatsApp
+.icon-btn.whatsapp {
+  &:hover:not(:disabled) {
+    background: rgba(37, 211, 102, 0.2) !important;
+    border-color: rgba(37, 211, 102, 0.3) !important;
+    color: #25D366 !important;
+  }
+}
+
+// Patient actuel dans le tableau
+tr.patient-actuel {
+  background: rgba(245, 158, 11, 0.1) !important;
+
+  td {
+    color: #F59E0B !important;
+  }
+}
+
+// Animation pour le patient actuel
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+}
+
+// Responsive pour le patient actuel
+@media (max-width: 768px) {
+  .current-patient-card {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+
+    .patient-info-large {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .patient-actions-large {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

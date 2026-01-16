@@ -1,0 +1,368 @@
+<div class="patient-container">
+  <!-- Background Animé -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <div class="floating-icon"><i class="fas fa-user-injured"></i></div>
+      <div class="floating-icon"><i class="fas fa-heartbeat"></i></div>
+      <div class="floating-icon"><i class="fas fa-stethoscope"></i></div>
+      <div class="floating-icon"><i class="fas fa-pills"></i></div>
+      <div class="floating-icon"><i class="fas fa-file-medical"></i></div>
+      <div class="floating-icon"><i class="fas fa-ambulance"></i></div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Header Secrétaire -->
+    
+
+    <!-- Section de Bienvenue avec Barre de Recherche -->
+    <section class="welcome-section">
+      <div class="welcome-content">
+        <h1>Gestion des Patients 👨‍⚕️</h1>
+        <p>Gérez l'ensemble des patients de votre cabinet médical</p>
+        <div class="current-time">
+          <i class="fas fa-clock"></i>
+          {{ currentDate | date:'HH:mm' }} • {{ currentDate | date:'EEEE d MMMM yyyy' }}
+        </div>
+      </div>
+      <div class="quick-actions-header">
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Rechercher un patient..." 
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            class="search-input">
+        </div>
+        <button class="action-btn primary" (click)="showAddForm = true; isEditing = false; resetForm()">
+          <i class="fas fa-user-plus"></i>
+          Nouveau Patient
+        </button>
+        <button class="action-btn secondary">
+          <i class="fas fa-file-export"></i>
+          Exporter
+        </button>
+      </div>
+    </section>
+
+    <!-- Message de succès -->
+    <div class="success-message" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <!-- Dossier Médical (modal / section) -->
+    <section class="dossier-section" *ngIf="showDossier">
+      <div class="dossier-backdrop" (click)="closeDossier()"></div>
+      <div class="dossier-modal">
+        <button class="close-modal" (click)="closeDossier()">✕</button>
+        <app-dossier-medical
+          [patientId]="selectedPatientForDossier?.id || 0"
+          (submit)="handleDossierSubmit($event)"
+          (cancel)="closeDossier()">
+        </app-dossier-medical>
+      </div>
+    </section>
+
+    <!-- Formulaire d'Ajout/Modification de Patient -->
+    <section class="add-patient-section" *ngIf="showAddForm">
+      <div class="section-header">
+        <h3>
+          <i class="fas" [class.fa-plus-circle]="!isEditing" [class.fa-edit]="isEditing"></i>
+          {{ isEditing ? 'Modifier le Patient' : 'Ajouter un Nouveau Patient' }}
+        </h3>
+        <button class="close-btn" (click)="showAddForm = false; resetForm()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form class="patient-form" #patientForm="ngForm" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="cin"><i class="fas fa-id-card"></i> CIN *</label>
+            <input 
+              type="text" 
+              id="cin" 
+              name="cin" 
+              [(ngModel)]="newPatient.cin" 
+              required
+              #cin="ngModel"
+              placeholder="Ex: AB123456"
+              maxlength="10">
+            <div class="error-message" *ngIf="cin.invalid && (cin.dirty || cin.touched)">
+              Le CIN est requis (max 10 caractères)
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="nom"><i class="fas fa-signature"></i> Nom *</label>
+            <input 
+              type="text" 
+              id="nom" 
+              name="nom" 
+              [(ngModel)]="newPatient.nom" 
+              required
+              #nom="ngModel"
+              placeholder="Ex: Smith"
+              pattern="[A-Za-zÀ-ÿ\s\-']+">
+            <div class="error-message" *ngIf="nom.invalid && (nom.dirty || nom.touched)">
+              <span *ngIf="nom.errors?.['required']">Le nom est requis</span>
+              <span *ngIf="nom.errors?.['pattern']">Caractères alphabétiques uniquement</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="prenom"><i class="fas fa-signature"></i> Prénom *</label>
+            <input 
+              type="text" 
+              id="prenom" 
+              name="prenom" 
+              [(ngModel)]="newPatient.prenom" 
+              required
+              #prenom="ngModel"
+              placeholder="Ex: John"
+              pattern="[A-Za-zÀ-ÿ\s\-']+">
+            <div class="error-message" *ngIf="prenom.invalid && (prenom.dirty || prenom.touched)">
+              <span *ngIf="prenom.errors?.['required']">Le prénom est requis</span>
+              <span *ngIf="prenom.errors?.['pattern']">Caractères alphabétiques uniquement</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dateNaissance"><i class="fas fa-birthday-cake"></i> Date de Naissance *</label>
+            <input 
+              type="date" 
+              id="dateNaissance" 
+              name="dateNaissance" 
+              [(ngModel)]="newPatient.dateNaissance" 
+              required
+              #dateNaissance="ngModel"
+              >
+            <div class="error-message" *ngIf="dateNaissance.invalid && (dateNaissance.dirty || dateNaissance.touched)">
+              La date de naissance est requise
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="sexe"><i class="fas fa-venus-mars"></i> Sexe *</label>
+            <select 
+              id="sexe" 
+              name="sexe" 
+              [(ngModel)]="newPatient.sexe" 
+              required
+              #sexe="ngModel">
+              <option value="">Sélectionnez</option>
+              <option value="M">Masculin</option>
+              <option value="F">Féminin</option>
+            </select>
+            <div class="error-message" *ngIf="sexe.invalid && (sexe.dirty || sexe.touched)">
+              Le sexe est requis
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="numTel"><i class="fas fa-phone"></i> Téléphone *</label>
+            <input 
+              type="tel" 
+              id="numTel" 
+              name="numTel" 
+              [(ngModel)]="newPatient.numTel" 
+              required
+              pattern="[0-9]{10}"
+              #numTel="ngModel"
+              placeholder="Ex: 0612345678">
+            <div class="error-message" *ngIf="numTel.invalid && (numTel.dirty || numTel.touched)">
+              <span *ngIf="numTel.errors?.['required']">Le téléphone est requis</span>
+              <span *ngIf="numTel.errors?.['pattern']">10 chiffres requis (ex: 0612345678)</span>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="typeMutuelle"><i class="fas fa-shield-alt"></i> Mutuelle</label>
+            <select 
+              id="typeMutuelle" 
+              name="typeMutuelle" 
+              [(ngModel)]="newPatient.typeMutuelle">
+              <option value="">Sans mutuelle</option>
+              <option value="CNOPS">CNOPS</option>
+              <option value="CNSS">CNSS</option>
+              <option value="RAMED">RAMED</option>
+              <option value="Assurance Privée">Assurance Privée</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+
+          <!-- Champ Autre Mutuelle (conditionnel) -->
+          <div class="form-group full-width" *ngIf="newPatient.typeMutuelle === 'Autre'">
+            <label for="autreMutuelle"><i class="fas fa-pen"></i> Précisez la mutuelle</label>
+            <input 
+              type="text" 
+              id="autreMutuelle" 
+              name="autreMutuelle" 
+              [(ngModel)]="newPatient.autreMutuelle"
+              placeholder="Nom de la mutuelle...">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="onCancel()">
+            <i class="fas fa-times"></i>
+            Annuler
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="!patientForm.valid">
+            <i class="fas" [class.fa-save]="isEditing" [class.fa-user-plus]="!isEditing"></i>
+            {{ isEditing ? 'Modifier le Patient' : 'Ajouter le Patient' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Liste des Patients -->
+    <section class="patients-section">
+      <div class="section-header">
+        <h3><i class="fas fa-list"></i> Liste des Patients ({{ filteredPatients.length }})</h3>
+        <div class="view-options">
+          <button class="view-btn active" title="Vue liste" (click)="viewMode = 'list'">
+            <i class="fas fa-th-list"></i>
+          </button>
+          <button class="view-btn" [class.active]="viewMode === 'grid'" title="Vue grille" (click)="viewMode = 'grid'">
+            <i class="fas fa-th-large"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div class="error-message" *ngIf="errorMessage" style="background: #fee; color: #c33; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <!-- Indicateur de chargement -->
+      <div *ngIf="isLoading" style="text-align: center; padding: 2rem;">
+        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #4CAF50;"></i>
+        <p>Chargement des patients...</p>
+      </div>
+
+      <!-- Vue Tableau -->
+      <div class="patients-table" *ngIf="viewMode === 'list'">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>CIN</th>
+              <th>Date Naissance</th>
+              <th>Âge</th>
+              <th>Téléphone</th>
+              <th>Mutuelle</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let patient of filteredPatients">
+              <td class="patient-name">
+                <div class="patient-avatar-small">
+                  {{ patient.prenom.charAt(0) }}{{ patient.nom.charAt(0) }}
+                </div>
+                <div>
+                  <strong>{{ patient.prenom }} {{ patient.nom }}</strong>
+                  <div class="patient-sex">{{ patient.sexe === 'M' ? 'Masculin' : 'Féminin' }}</div>
+                </div>
+              </td>
+              <td>{{ patient.cin }}</td>
+              <td>{{ patient.dateNaissance | date:'dd/MM/yyyy' }}</td>
+              <td>{{ calculateAge(patient.dateNaissance) }} ans</td>
+              <td>{{ patient.numTel || 'Non renseigné' }}</td>
+              <td>
+                <span class="mutuelle-badge" *ngIf="patient.typeMutuelle; else sansMutuelle">
+                  {{ patient.typeMutuelle }}
+                </span>
+                <ng-template #sansMutuelle>
+                  <span class="no-mutuelle">Aucune</span>
+                </ng-template>
+              </td>
+              <td class="actions-cell">
+                <button class="icon-btn edit" title="Modifier" (click)="editPatient(patient)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="icon-btn view" title="Dossier Médical" (click)="viewMedicalRecord(patient)">
+                  <i class="fas fa-file-medical"></i>
+                </button>
+                <button class="icon-btn danger" title="Supprimer" (click)="deletePatient(patient)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Vue Grille -->
+      <div class="patients-grid" *ngIf="viewMode === 'grid'">
+        <div class="patient-card" *ngFor="let patient of filteredPatients">
+          <div class="patient-header">
+            <div class="patient-avatar">
+              {{ patient.prenom.charAt(0) }}{{ patient.nom.charAt(0) }}
+            </div>
+            <div class="patient-info">
+              <h4>{{ patient.prenom }} {{ patient.nom }}</h4>
+              <p><i class="fas fa-id-card"></i> {{ patient.cin }}</p>
+            </div>
+            <div class="patient-actions">
+              <button class="icon-btn" title="Modifier" (click)="editPatient(patient)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="icon-btn" title="Dossier Médical" (click)="viewMedicalRecord(patient)">
+                <i class="fas fa-file-medical"></i>
+              </button>
+              <button class="icon-btn danger" title="Supprimer" (click)="deletePatient(patient)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="patient-details">
+            <div class="detail-item">
+              <i class="fas fa-birthday-cake"></i>
+              <span>{{ calculateAge(patient.dateNaissance) }} ans</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-phone"></i>
+              <span>{{ patient.numTel || 'Non renseigné' }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-venus-mars"></i>
+              <span>{{ patient.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-shield-alt"></i>
+              <span>{{ patient.typeMutuelle || 'Aucune' }}</span>
+            </div>
+          </div>
+
+          <div class="patient-footer">
+            <div class="last-consultation">
+              <i class="fas fa-calendar"></i>
+              Dernière visite: {{ getRandomDate() | date:'dd/MM/yyyy' }}
+            </div>
+            <div class="status-badge active">
+              Actif
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message si aucun patient trouvé -->
+      <div class="no-patients" *ngIf="filteredPatients.length === 0">
+        <i class="fas fa-user-slash"></i>
+        <h4>Aucun patient trouvé</h4>
+        <p *ngIf="searchTerm">Aucun patient ne correspond à votre recherche "{{ searchTerm }}".</p>
+        <p *ngIf="!searchTerm">Aucun patient n'est enregistré dans le système.</p>
+        <button class="action-btn primary" (click)="showAddForm = true; isEditing = false; resetForm()">
+          <i class="fas fa-user-plus"></i>
+          Ajouter le premier patient
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

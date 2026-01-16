@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  # Base de données MySQL
+  mysql-db:
+    image: mysql:8.0
+    container_name: medical-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
+  # Discovery Service (Eureka)
+  discovery-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: discovry-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-service
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: auth-service
+    container_name: auth-service
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/auth_db?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # Cabinet Service
+  cabinet-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: cabinet-service
+    container_name: cabinet-service
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/cabinet_service?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # Patient Medical Service
+  patient-medical-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: patient-medical-service
+    container_name: patient-medical-service
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/patient_medical_db?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # Rendezvous Service
+  rendezvous-service:
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: rendezvous-service
+    container_name: rendezvous-service
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/rendezvous_db?createDatabaseIfNotExist=true
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+    container_name: medical-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-gateway
+
+  # SonarQube (pour les tests locaux)
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+
+volumes:
+  mysql-data:
+  sonarqube-data:
+  sonarqube-extensions:
+  sonarqube-logs:

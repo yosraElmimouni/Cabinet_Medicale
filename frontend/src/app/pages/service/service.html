@@ -1,0 +1,271 @@
+<div class="services-container">
+  <!-- Background Animé -->
+  <div class="services-background">
+    <div class="floating-medical">
+      <div class="medical-icon">🫀</div>
+      <div class="medical-icon">🧠</div>
+      <div class="medical-icon">🫁</div>
+      <div class="medical-icon">👁️</div>
+      <div class="medical-icon">🦷</div>
+      <div class="medical-icon">🦴</div>
+    </div>
+    <div class="pulse-waves">
+      <div class="wave"></div>
+      <div class="wave"></div>
+      <div class="wave"></div>
+    </div>
+  </div>
+
+  <div class="services-content">
+    <!-- En-tête Hero -->
+    <section class="services-hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <i class="fas fa-star-of-life"></i>
+          <span>Services Médicaux d'Excellence</span>
+        </div>
+        
+        <h1 class="hero-title">
+          <span class="title-line">Soins Complets</span>
+          <span class="title-line highlight">Pour Votre Santé</span>
+        </h1>
+        
+        <p class="hero-description">
+          Découvrez notre gamme complète de services médicaux, 
+          alliant technologie de pointe et expertise humaine 
+          pour prendre soin de vous à chaque étape de votre vie.
+        </p>
+
+        <!-- Statistiques -->
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">Services</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">12</div>
+            <div class="stat-label">Spécialités</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">24h/24</div>
+            <div class="stat-label">Urgences</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">99%</div>
+            <div class="stat-label">Satisfaction</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="services-orb">
+          <div class="orb-core">
+            <i class="fas fa-hand-holding-medical"></i>
+          </div>
+          <div class="orb-ring ring-1"></div>
+          <div class="orb-ring ring-2"></div>
+          <div class="orb-ring ring-3"></div>
+          <div class="orb-service" *ngFor="let service of floatingServices" 
+               [style.--delay]="service.delay"
+               [style.--duration]="service.duration">
+            <i [class]="service.icon"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation par Catégories -->
+    <section class="categories-section">
+      <div class="categories-nav">
+        <button class="category-btn" 
+                *ngFor="let category of categories"
+                [class.active]="activeCategory === category.id"
+                (click)="setActiveCategory(category.id)">
+          <i [class]="category.icon"></i>
+          {{ category.name }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Grille des Services -->
+    <section class="services-grid-section">
+      <div class="section-header">
+        <h2>{{ getActiveCategoryName() }}</h2>
+        <p>{{ getFilteredServices().length }} services disponibles</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card" 
+             *ngFor="let service of getFilteredServices()"
+             [class.featured]="service.featured"
+             (click)="viewServiceDetails(service.id)">
+          
+          <!-- Badge Vedette -->
+          <div class="featured-badge" *ngIf="service.featured">
+            <i class="fas fa-crown"></i>
+            Service Vedette
+          </div>
+
+          <!-- Badge Urgence -->
+          <div class="urgent-badge" *ngIf="service.urgent">
+            <i class="fas fa-bolt"></i>
+            Urgence
+          </div>
+
+          <!-- En-tête de la Carte -->
+          <div class="card-header">
+            <div class="service-icon">
+              <i [class]="service.icon"></i>
+            </div>
+            <div class="service-main-info">
+              <h3>{{ service.name }}</h3>
+              <p class="category">{{ getCategoryName(service.category) }}</p>
+              <div class="duration">
+                <i class="fas fa-clock"></i>
+                {{ service.duration }}
+              </div>
+            </div>
+            <div class="price-tag" *ngIf="service.price">
+              {{ service.price }}
+            </div>
+          </div>
+
+          <!-- Description -->
+          <p class="service-description">{{ service.description }}</p>
+
+          <!-- Fonctionnalités -->
+          <div class="features-list">
+            <div class="feature-item" *ngFor="let feature of service.features">
+              <i class="fas fa-check"></i>
+              {{ feature }}
+            </div>
+          </div>
+
+          <!-- Statistiques -->
+          <div class="service-stats">
+            <div class="stat">
+              <i class="fas fa-user-md"></i>
+              <span>{{ service.doctors }} médecins</span>
+            </div>
+            <div class="stat">
+              <i class="fas fa-calendar-check"></i>
+              <span>{{ service.availability }}</span>
+            </div>
+            <div class="stat">
+              <i class="fas fa-star"></i>
+              <span>{{ service.rating }}/5</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card-actions">
+            <button class="btn-info" (click)="viewServiceDetails(service.id, $event)">
+              <i class="fas fa-info-circle"></i>
+              Détails
+            </button>
+            <button class="btn-book" (click)="bookService(service.id, $event)">
+              <i class="fas fa-calendar-plus"></i>
+              Prendre RDV
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services en Vedette -->
+    <section class="featured-services" *ngIf="getFeaturedServices().length > 0">
+      <div class="section-header">
+        <h2>Services en Vedette</h2>
+        <p>Nos services les plus populaires et innovants</p>
+      </div>
+
+      <div class="featured-slider">
+        <div class="featured-card" 
+             *ngFor="let service of getFeaturedServices()"
+             [style.background]="service.gradient">
+          <div class="card-content">
+            <div class="service-icon">
+              <i [class]="service.icon"></i>
+            </div>
+            <h3>{{ service.name }}</h3>
+            <p>{{ service.shortDescription }}</p>
+            <div class="featured-stats">
+              <div class="stat">
+                <strong>{{ service.successRate }}</strong>
+                <span>Taux de réussite</span>
+              </div>
+              <div class="stat">
+                <strong>{{ service.patients }}+</strong>
+                <span>Patients</span>
+              </div>
+            </div>
+            <button class="btn-featured" (click)="viewServiceDetails(service.id)">
+              Découvrir
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Processus de Consultation -->
+    <section class="process-section">
+      <div class="section-header">
+        <h2>Comment ça marche ?</h2>
+        <p>Un processus simple et transparent pour vos soins</p>
+      </div>
+
+      <div class="process-steps">
+        <div class="process-step" *ngFor="let step of processSteps; let i = index">
+          <div class="step-number">{{ i + 1 }}</div>
+          <div class="step-icon">
+            <i [class]="step.icon"></i>
+          </div>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+          <div class="step-duration">{{ step.duration }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+      <div class="section-header">
+        <h2>Questions Fréquentes</h2>
+        <p>Trouvez rapidement des réponses à vos questions</p>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item" 
+             *ngFor="let faq of faqs"
+             [class.active]="activeFaq === faq.id"
+             (click)="toggleFaq(faq.id)">
+          <div class="faq-question">
+            <h4>{{ faq.question }}</h4>
+            <i class="fas" [class.fa-chevron-down]="activeFaq !== faq.id" [class.fa-chevron-up]="activeFaq === faq.id"></i>
+          </div>
+          <div class="faq-answer" *ngIf="activeFaq === faq.id">
+            <p>{{ faq.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="cta-section">
+      <div class="cta-content">
+        <h2>Prêt à Prendre Soin de Votre Santé ?</h2>
+        <p>Rejoignez nos milliers de patients satisfaits et bénéficiez de soins d'exception</p>
+        <div class="cta-buttons">
+          <button class="btn-primary" (click)="goToAppointment()">
+  <i class="fas fa-calendar-check"></i>
+  Prendre Rendez-vous
+</button>
+
+         
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

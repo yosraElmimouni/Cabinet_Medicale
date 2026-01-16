@@ -1,0 +1,483 @@
+<div class="dashboard-container">
+  <!-- Background elements -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <div class="floating-icon">
+        <i class="fas fa-stethoscope"></i>
+      </div>
+      <div class="floating-icon">
+        <i class="fas fa-clinic-medical"></i>
+      </div>
+      <div class="floating-icon">
+        <i class="fas fa-user-md"></i>
+      </div>
+      <div class="floating-icon">
+        <i class="fas fa-hospital"></i>
+      </div>
+      <div class="floating-icon">
+        <i class="fas fa-pills"></i>
+      </div>
+      <div class="floating-icon">
+        <i class="fas fa-heartbeat"></i>
+      </div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="welcome-content">
+        <h1>Gestion des Cabinets</h1>
+        <p>Gérez l'ensemble des cabinets médicaux de votre plateforme</p>
+        <div class="current-time">
+          <i class="fas fa-clock"></i>
+          <span>{{ currentDateTime }}</span>
+        </div>
+      </div>
+      
+      <div class="quick-actions-header">
+        <button class="action-btn primary" (click)="showAddForm()">
+          <i class="fas fa-plus"></i>
+          <span>Nouveau Cabinet</span>
+        </button>
+        <button class="action-btn secondary" (click)="refreshData()" [disabled]="isLoading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+          <span>Actualiser</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cabinet Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let stat of stats; let i = index" [class]="'stat-' + (i + 1)">
+        <div class="stat-icon" [style.background]="stat.gradient">
+          <i [class]="stat.icon"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stat.value | number }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+          <div class="stat-trend" [class]="stat.trend.class">
+            <i [class]="stat.trend.icon"></i>
+            <span>{{ stat.trend.value }}%</span>
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Cabinet Form -->
+    <div *ngIf="showForm" class="cabinet-form-section">
+      <div class="form-header">
+        <h2>
+          <i class="fas fa-hospital"></i>
+          {{ editingCabinet ? 'Modifier le Cabinet' : 'Nouveau Cabinet' }}
+        </h2>
+        <button class="btn-close-form" (click)="hideForm()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="cabinetForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="nomCabinet">
+            <i class="fas fa-hospital-alt"></i>
+            Nom du Cabinet
+          </label>
+          <input 
+            type="text" 
+            id="nomCabinet" 
+            formControlName="nomCabinet" 
+            class="form-control" 
+            placeholder="Entrez le nom du cabinet"
+          >
+          <div *ngIf="cabinetForm.get('nomCabinet')?.invalid && cabinetForm.get('nomCabinet')?.touched" 
+               class="form-hint text-danger">
+            Le nom du cabinet est requis (minimum 3 caractères)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="emailCabinet">
+            <i class="fas fa-envelope"></i>
+            Email
+          </label>
+          <input 
+            type="email" 
+            id="emailCabinet" 
+            formControlName="emailCabinet" 
+            class="form-control" 
+            placeholder="contact@cabinet.fr"
+          >
+          <div *ngIf="cabinetForm.get('emailCabinet')?.invalid && cabinetForm.get('emailCabinet')?.touched" 
+               class="form-hint text-danger">
+            Veuillez entrer une adresse email valide
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="teleCabinet">
+            <i class="fas fa-phone"></i>
+            Téléphone
+          </label>
+          <input 
+            type="tel" 
+            id="teleCabinet" 
+            formControlName="teleCabinet" 
+            class="form-control" 
+            placeholder="01 23 45 67 89"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="adresseCabinet">
+            <i class="fas fa-map-marker-alt"></i>
+            Adresse
+          </label>
+          <textarea 
+            id="adresseCabinet" 
+            formControlName="adresseCabinet" 
+            class="form-control" 
+            placeholder="Adresse complète du cabinet"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <i class="fas fa-image"></i>
+            Logo du Cabinet
+          </label>
+          <div class="logo-upload">
+            <div *ngIf="logoPreview" class="logo-preview">
+              <img [src]="logoPreview" alt="Logo preview">
+              <button type="button" class="btn-remove-logo" (click)="removeLogo()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="upload-area" (click)="fileInput.click()">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Cliquez pour télécharger un logo</p>
+              <p class="text-sm">Format recommandé: PNG, JPG (max 2MB)</p>
+              <input 
+                #fileInput
+                type="file" 
+                accept="image/*" 
+                class="file-input" 
+                (change)="onFileSelected($event)"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="statut">
+            <i class="fas fa-info-circle"></i>
+            Statut
+          </label>
+          <select id="statut" formControlName="statut" class="form-control">
+            <option value="ACTIF">Actif</option>
+            <option value="INACTIF">Inactif</option>
+            <option value="SUSPENDU">Suspendu</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="hideForm()" [disabled]="isSubmitting">
+            <i class="fas fa-times"></i>
+            Annuler
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="cabinetForm.invalid || isSubmitting">
+            <i class="fas" [class.fa-save]="!isSubmitting" [class.fa-spinner]="isSubmitting"></i>
+            {{ editingCabinet ? 'Mettre à jour' : 'Créer le cabinet' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Filter and Search Section -->
+    <div class="widget-section mb-4">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-filter"></i>
+          Filtres
+        </h2>
+        <div class="flex gap-2">
+          <div class="search-container">
+            <input 
+              type="text" 
+              [(ngModel)]="filter.searchTerm" 
+              (input)="onSearch()"
+              placeholder="Rechercher un cabinet..."
+              class="form-control"
+              style="max-width: 300px;"
+            >
+          </div>
+          <select [(ngModel)]="filter.statut" (change)="onFilterChange()" class="form-control" style="width: 150px;">
+            <option value="ALL">Tous les statuts</option>
+            <option value="ACTIF">Actif</option>
+            <option value="INACTIF">Inactif</option>
+            <option value="SUSPENDU">Suspendu</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      <!-- Left Column: Cabinets List -->
+      <div class="left-column">
+        <div class="widget-section">
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-clinic-medical"></i>
+              Liste des Cabinets
+            </h2>
+            <div class="text-sm text-gray-400">
+              {{ paginatedResponse?.total || 0 }} cabinets trouvés
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="isLoading && !paginatedResponse?.items?.length" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <div class="empty-title">Chargement des cabinets...</div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!isLoading && (!paginatedResponse?.items?.length)" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-clinic-medical"></i>
+            </div>
+            <div class="empty-title">Aucun cabinet trouvé</div>
+            <div class="empty-description">
+              {{
+                filter.searchTerm || filter.statut !== 'ALL'
+                ? 'Aucun cabinet ne correspond à vos critères de recherche.'
+                : 'Commencez par ajouter votre premier cabinet médical.'
+              }}
+            </div>
+            <button class="empty-action" (click)="showAddForm()">
+              <i class="fas fa-plus"></i>
+              Ajouter un cabinet
+            </button>
+          </div>
+
+          <!-- Cabinets List -->
+          <div class="cabinets-list" *ngIf="!isLoading && paginatedResponse?.items?.length">
+            <div class="cabinet-card" *ngFor="let cabinet of paginatedResponse?.items">
+              <div class="cabinet-header">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center">
+                    <img 
+                      *ngIf="cabinet.logo; else defaultLogo" 
+                      [src]="cabinet.logo" 
+                      alt="Logo" 
+                      class="w-full h-full object-cover"
+                    >
+                    <ng-template #defaultLogo>
+                      <i class="fas fa-hospital text-gray-400 text-xl"></i>
+                    </ng-template>
+                  </div>
+                  <div class="cabinet-name">{{ cabinet.nomCabinet }}</div>
+                </div>
+                <div class="cabinet-status" [class]="'status-' + (cabinet.statut?.toLowerCase() || 'inactive')">
+                  {{ getStatusLabel(cabinet.statut) }}
+                </div>
+              </div>
+
+              <div class="cabinet-stats">
+                <div class="cabinet-stat">
+                  <i class="fas fa-envelope"></i>
+                  <span>{{ cabinet.emailCabinet }}</span>
+                </div>
+                <div class="cabinet-stat">
+                  <i class="fas fa-phone"></i>
+                  <span>{{ cabinet.teleCabinet }}</span>
+                </div>
+                <div class="cabinet-stat">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>{{ cabinet.adresseCabinet | truncate:50 }}</span>
+                </div>
+              </div>
+
+              <div class="cabinet-footer">
+                <div class="cabinet-revenue">
+                  <i class="fas fa-calendar-alt"></i>
+                  <span>Créé le {{ cabinet.createdAt | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn-manage" (click)="editCabinet(cabinet)">
+                    <i class="fas fa-edit"></i>
+                    Modifier
+                  </button>
+                  <button class="btn-manage bg-red-500 hover:bg-red-600" (click)="deleteCabinet(cabinet)">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="paginatedResponse && paginatedResponse.totalPages > 1" class="flex justify-center items-center gap-4 mt-6">
+            <button 
+              class="action-btn secondary" 
+              (click)="previousPage()" 
+              [disabled]="!paginatedResponse.hasPrev || isLoading"
+            >
+              <i class="fas fa-chevron-left"></i>
+              Précédent
+            </button>
+            
+            <div class="text-sm text-gray-400">
+              Page {{ paginatedResponse.page }} sur {{ paginatedResponse.totalPages }}
+            </div>
+            
+            <button 
+              class="action-btn secondary" 
+              (click)="nextPage()" 
+              [disabled]="!paginatedResponse.hasNext || isLoading"
+            >
+              Suivant
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Statistics and Actions -->
+      <div class="right-column">
+        <!-- Quick Actions -->
+        <div class="widget-section">
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-bolt"></i>
+              Actions Rapides
+            </h2>
+          </div>
+          <div class="quick-actions-grid">
+            <div class="quick-action-card" (click)="showAddForm()">
+              <div class="action-icon">
+                <i class="fas fa-plus"></i>
+              </div>
+              <div class="action-content">
+                <div class="action-title">Nouveau Cabinet</div>
+                <div class="action-description">Ajouter un nouveau cabinet médical</div>
+              </div>
+              <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+            <div class="quick-action-card" (click)="exportData()">
+              <div class="action-icon">
+                <i class="fas fa-file-export"></i>
+              </div>
+              <div class="action-content">
+                <div class="action-title">Exporter</div>
+                <div class="action-description">Exporter la liste des cabinets</div>
+              </div>
+              <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+            <div class="quick-action-card" (click)="toggleStatusFilter()">
+              <div class="action-icon">
+                <i class="fas fa-filter"></i>
+              </div>
+              <div class="action-content">
+                <div class="action-title">Filtrer</div>
+                <div class="action-description">Gérer les filtres avancés</div>
+              </div>
+              <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+            <div class="quick-action-card" (click)="refreshData()">
+              <div class="action-icon">
+                <i class="fas fa-sync-alt"></i>
+              </div>
+              <div class="action-content">
+                <div class="action-title">Actualiser</div>
+                <div class="action-description">Rafraîchir les données</div>
+              </div>
+              <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="widget-section">
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-server"></i>
+              Statut du Système
+            </h2>
+          </div>
+          <div class="system-status">
+            <div class="status-item">
+              <div class="status-label">Serveur API</div>
+              <div class="status-indicator online"></div>
+              <div class="status-text">En ligne</div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">Base de données</div>
+              <div class="status-indicator online"></div>
+              <div class="status-text">Connectée</div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">Stockage fichiers</div>
+              <div class="status-indicator online"></div>
+              <div class="status-text">Disponible</div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">Synchronisation</div>
+              <div class="status-indicator online"></div>
+              <div class="status-text">À jour</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cabinet Info (Selected Cabinet) -->
+        <div class="widget-section" *ngIf="selectedCabinet">
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-info-circle"></i>
+              Cabinet Sélectionné
+            </h2>
+          </div>
+          <div class="cabinet-info">
+            <h3>
+              <i class="fas fa-clinic-medical"></i>
+              {{ selectedCabinet.nomCabinet }}
+            </h3>
+            <div class="cabinet-details">
+              <div>
+                <i class="fas fa-envelope"></i>
+                {{ selectedCabinet.emailCabinet }}
+              </div>
+              <div>
+                <i class="fas fa-phone"></i>
+                {{ selectedCabinet.teleCabinet }}
+              </div>
+              <div>
+                <i class="fas fa-map-marker-alt"></i>
+                {{ selectedCabinet.adresseCabinet | truncate:30 }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

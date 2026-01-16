@@ -1,0 +1,600 @@
+<div class="dashboard-container">
+  <!-- Background Effects -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <i class="fas fa-stethoscope floating-icon"></i>
+      <i class="fas fa-heartbeat floating-icon"></i>
+      <i class="fas fa-user-md floating-icon"></i>
+      <i class="fas fa-prescription floating-icon"></i>
+      <i class="fas fa-file-medical floating-icon"></i>
+      <i class="fas fa-clipboard-check floating-icon"></i>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="welcome-content">
+        <h1>Gestion des Consultations</h1>
+        <p>Gérez toutes les consultations médicales, les diagnostics et les traitements</p>
+        <div class="current-time">
+          <i class="fas fa-clock"></i>
+          {{ currentDate | date:'dd MMMM yyyy - HH:mm' }}
+        </div>
+      </div>
+      <div class="quick-actions-header">
+        <button class="action-btn primary" (click)="openAddModal()" [disabled]="isLoading">
+          <i class="fas fa-plus-circle"></i>
+          Nouvelle Consultation
+        </button>
+        <button class="action-btn secondary" (click)="openRendezVousModal()" [disabled]="isLoading">
+          <i class="fas fa-calendar-check"></i>
+          Depuis Rendez-vous
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-icon">
+          <i class="fas fa-file-medical-alt"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.total }}</div>
+          <div class="stat-label">Consultations Totales</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            12% ce mois
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+
+      <div class="stat-card today">
+        <div class="stat-icon">
+          <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.today }}</div>
+          <div class="stat-label">Consultations Aujourd'hui</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            8% aujourd'hui
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+
+      <div class="stat-card completed">
+        <div class="stat-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.completed }}</div>
+          <div class="stat-label">Consultations Complétées</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            15% ce mois
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+
+      <div class="stat-card pending">
+        <div class="stat-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.pending }}</div>
+          <div class="stat-label">En Attente</div>
+          <div class="stat-trend negative">
+            <i class="fas fa-arrow-down"></i>
+            5% aujourd'hui
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filters-grid">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Rechercher une consultation..." 
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            [disabled]="isLoading"
+          >
+        </div>
+        
+        <select [(ngModel)]="selectedType" (change)="applyFilters()" class="filter-select" [disabled]="isLoading">
+          <option value="all">Tous les types</option>
+          <option *ngFor="let type of consultationTypes" [value]="type">{{ type }}</option>
+        </select>
+
+        <select [(ngModel)]="selectedStatus" (change)="applyFilters()" class="filter-select" [disabled]="isLoading">
+          <option value="all">Tous les statuts</option>
+          <option value="completed">Complétées</option>
+          <option value="pending">En cours</option>
+        </select>
+
+        <select [(ngModel)]="selectedPatient" (change)="applyFilters()" class="filter-select" [disabled]="isLoading">
+          <option [value]="0">Tous les patients</option>
+          <option *ngFor="let patient of patients" [value]="patient.idPatient">
+            {{ patient.nom }} {{ patient.prenom }}
+          </option>
+        </select>
+
+        <div class="date-filters">
+          <input 
+            type="date" 
+            [(ngModel)]="startDate" 
+            (change)="applyFilters()" 
+            class="date-input"
+            placeholder="Date début"
+            [disabled]="isLoading"
+          >
+          <input 
+            type="date" 
+            [(ngModel)]="endDate" 
+            (change)="applyFilters()" 
+            class="date-input"
+            placeholder="Date fin"
+            [disabled]="isLoading"
+          >
+        </div>
+
+        <button class="clear-btn" (click)="clearFilters()" [disabled]="isLoading">
+          <i class="fas fa-times"></i>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+
+    <!-- Consultations List Section -->
+    <div class="widget-section">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-list"></i>
+          Liste des Consultations
+        </h2>
+        <div class="actions-header">
+          <button class="action-btn export" (click)="exportAll()" [disabled]="isLoading || filteredConsultations.length === 0">
+            <i class="fas fa-file-export"></i>
+            Exporter
+          </button>
+          <span class="results-count">{{ filteredConsultations.length }} résultats</span>
+        </div>
+      </div>
+
+      <div class="consultations-grid">
+        <div *ngFor="let consultation of filteredConsultations" 
+             class="consultation-card" 
+             [class.completed]="getConsultationStatus(consultation) === 'Complétée'"
+             [class.pending]="getConsultationStatus(consultation) === 'En cours'">
+          
+          <div class="consultation-header">
+            <div class="patient-avatar">
+              <i class="fas fa-user-injured"></i>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">{{ getPatientName(consultation) }}</div>
+              <div class="consultation-type">{{ consultation.type }}</div>
+            </div>
+            <div class="consultation-status" [class]="getStatusClass(getConsultationStatus(consultation))">
+              {{ getConsultationStatus(consultation) }}
+            </div>
+          </div>
+
+          <div class="consultation-body">
+            <div class="consultation-details">
+              <div class="detail-item">
+                <i class="fas fa-calendar"></i>
+                <span>{{ formatDate(consultation.dateConsultation) }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-stethoscope"></i>
+                <span>{{ consultation.diagnostic || 'Pas de diagnostic' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-pills"></i>
+                <span>{{ consultation.traitement || 'Pas de traitement' }}</span>
+              </div>
+            </div>
+
+            <div class="consultation-actions">
+              <button class="btn-details" (click)="openDetailsModal(consultation)" [disabled]="isLoading">
+                <i class="fas fa-eye"></i>
+                Détails
+              </button>
+              <button class="btn-edit" (click)="openEditModal(consultation)" [disabled]="isLoading">
+                <i class="fas fa-edit"></i>
+                Modifier
+              </button>
+              <button class="btn-export" (click)="exportToPDF(consultation)" [disabled]="isLoading">
+                <i class="fas fa-file-pdf"></i>
+                PDF
+              </button>
+              <button class="btn-facture" (click)="generateFacture(consultation)" [disabled]="isLoading">
+                <i class="fas fa-file-invoice-dollar"></i>
+                Facture
+              </button>
+              <button class="btn-delete" (click)="deleteConsultation(consultation.idConsultation)" [disabled]="isLoading || isDeleting">
+                <i class="fas fa-trash"></i>
+                {{ isDeleting ? 'Suppression...' : 'Supprimer' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading && consultations.length === 0" class="loading-state">
+        <div class="spinner"></div>
+        <p>Chargement des consultations...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredConsultations.length === 0 && rendezVousDisponibles.length === 0" class="empty-state">
+        <i class="fas fa-file-medical-alt"></i>
+        <h3>Aucune consultation trouvée</h3>
+        <p>Commencez par créer une nouvelle consultation</p>
+        <button class="action-btn primary" (click)="openAddModal()">
+          <i class="fas fa-plus-circle"></i>
+          Créer une consultation
+        </button>
+      </div>
+    </div>
+
+    <!-- Rendez-vous Terminés Section -->
+    <div class="widget-section" *ngIf="rendezVousDisponibles.length > 0">
+      <div class="section-header">
+        <h2>
+          <i class="fas fa-calendar-check"></i>
+          Rendez-vous Terminés
+        </h2>
+        <div class="actions-header">
+          <span class="results-count">{{ rendezVousDisponibles.length }} rendez-vous terminé(s)</span>
+        </div>
+      </div>
+
+      <div class="consultations-grid">
+        <div *ngFor="let rdv of rendezVousDisponibles" 
+             class="consultation-card completed">
+          
+          <div class="consultation-header">
+            <div class="patient-avatar">
+              <i class="fas fa-user-injured"></i>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">{{ rdv.patientName }}</div>
+              <div class="consultation-type">{{ rdv.type }}</div>
+            </div>
+            <div class="consultation-status completed">
+              Terminé
+            </div>
+          </div>
+
+          <div class="consultation-body">
+            <div class="consultation-details">
+              <div class="detail-item">
+                <i class="fas fa-calendar"></i>
+                <span>{{ formatDate(rdv.dateRdvs) }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-clock"></i>
+                <span>{{ formatTime(rdv.heureDebut) }} - {{ formatTime(rdv.heureFin) }}</span>
+              </div>
+            </div>
+
+            <div class="consultation-actions">
+              <button class="btn-details" (click)="viewRendezVousDetails(rdv)" [disabled]="isLoading">
+                <i class="fas fa-eye"></i>
+                Détails RDV
+              </button>
+              <button class="btn-primary" (click)="createConsultationFromRdv(rdv)" [disabled]="isLoading">
+                <i class="fas fa-plus-circle"></i>
+                Créer Consultation
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Consultation Modal -->
+<div *ngIf="showAddModal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus-circle"></i> Nouvelle Consultation</h3>
+      <button class="modal-close" (click)="showAddModal = false" [disabled]="isLoading">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="addConsultation()" #consultationForm="ngForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label><i class="fas fa-tag"></i> Type de Consultation</label>
+            <select [(ngModel)]="newConsultation.type" name="type" required class="form-control">
+              <option value="">Sélectionner un type</option>
+              <option *ngFor="let type of consultationTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-calendar"></i> Date</label>
+            <input 
+              type="datetime-local" 
+              [(ngModel)]="newConsultation.dateConsultation" 
+              name="dateConsultation"
+              required
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-user-md"></i> Médecin</label>
+            <input 
+              type="number" 
+              [(ngModel)]="newConsultation.idMedecin" 
+              name="idMedecin"
+              required
+              class="form-control"
+              placeholder="ID du médecin"
+            >
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-calendar-check"></i> Rendez-vous (obligatoire)</label>
+            <input 
+              type="number" 
+              [(ngModel)]="newConsultation.idRendezVous" 
+              name="idRendezVous"
+              required
+              class="form-control"
+              placeholder="ID du rendez-vous"
+            >
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-clipboard-check"></i> Examen Clinique</label>
+            <textarea 
+              [(ngModel)]="newConsultation.examenClinique" 
+              name="examenClinique"
+              rows="3"
+              class="form-control"
+              placeholder="Détails de l'examen clinique..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-search"></i> Examens Supplémentaires</label>
+            <textarea 
+              [(ngModel)]="newConsultation.examenSupplementaire" 
+              name="examenSupplementaire"
+              rows="2"
+              class="form-control"
+              placeholder="Examens demandés..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-diagnoses"></i> Diagnostic</label>
+            <textarea 
+              [(ngModel)]="newConsultation.diagnostic" 
+              name="diagnostic"
+              rows="3"
+              class="form-control"
+              placeholder="Diagnostic établi..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-prescription-bottle-alt"></i> Traitement Prescrit</label>
+            <textarea 
+              [(ngModel)]="newConsultation.traitement" 
+              name="traitement"
+              rows="4"
+              class="form-control"
+              placeholder="Détails du traitement..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-sticky-note"></i> Observations</label>
+            <textarea 
+              [(ngModel)]="newConsultation.observations" 
+              name="observations"
+              rows="2"
+              class="form-control"
+              placeholder="Observations supplémentaires..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="showAddModal = false" [disabled]="isLoading">
+            Annuler
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading || !consultationForm.form.valid">
+            <i class="fas fa-save"></i>
+            {{ isLoading ? 'Création...' : 'Créer la Consultation' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Consultation Modal -->
+<div *ngIf="showEditModal && currentConsultation" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit"></i> Modifier la Consultation</h3>
+      <button class="modal-close" (click)="showEditModal = false" [disabled]="isLoading">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="updateConsultation()" #editForm="ngForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label><i class="fas fa-tag"></i> Type de Consultation</label>
+            <select [(ngModel)]="currentConsultation.type" name="type" required class="form-control">
+              <option *ngFor="let type of consultationTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-calendar"></i> Date</label>
+            <input 
+              type="datetime-local" 
+              [value]="currentConsultation.dateConsultation | date:'yyyy-MM-ddTHH:mm'"
+              (change)="currentConsultation.dateConsultation = $event.target.value"
+              name="dateConsultation"
+              required
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-user-md"></i> Médecin</label>
+            <input 
+              type="number" 
+              [(ngModel)]="currentConsultation.idMedecin" 
+              name="idMedecin"
+              required
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-clipboard-check"></i> Examen Clinique</label>
+            <textarea 
+              [(ngModel)]="currentConsultation.examenClinique" 
+              name="examenClinique"
+              rows="3"
+              class="form-control"
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-search"></i> Examens Supplémentaires</label>
+            <textarea 
+              [(ngModel)]="currentConsultation.examenSupplementaire" 
+              name="examenSupplementaire"
+              rows="2"
+              class="form-control"
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-diagnoses"></i> Diagnostic</label>
+            <textarea 
+              [(ngModel)]="currentConsultation.diagnostic" 
+              name="diagnostic"
+              rows="3"
+              class="form-control"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-prescription-bottle-alt"></i> Traitement Prescrit</label>
+            <textarea 
+              [(ngModel)]="currentConsultation.traitement" 
+              name="traitement"
+              rows="4"
+              class="form-control"
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label><i class="fas fa-sticky-note"></i> Observations</label>
+            <textarea 
+              [(ngModel)]="currentConsultation.observations" 
+              name="observations"
+              rows="2"
+              class="form-control"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="showEditModal = false" [disabled]="isLoading">
+            Annuler
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            <i class="fas fa-save"></i>
+            {{ isLoading ? 'Mise à jour...' : 'Mettre à Jour' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Rendez-vous Modal -->
+<div *ngIf="showRendezVousModal" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3><i class="fas fa-calendar-check"></i> Créer depuis un Rendez-vous</h3>
+      <button class="modal-close" (click)="showRendezVousModal = false" [disabled]="isLoading">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="rendezVousDisponibles.length === 0" class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h3>Aucun rendez-vous disponible</h3>
+        <p>Tous les rendez-vous ont déjà été convertis en consultations</p>
+      </div>
+
+      <div *ngIf="rendezVousDisponibles.length > 0" class="rendezvous-list">
+        <div *ngFor="let rdv of rendezVousDisponibles" 
+             class="rendezvous-item"
+             [class.selected]="selectedRendezVous.RendezVousId === rdv.idRendezVous"
+             (click)="selectedRendezVous.RendezVousId = rdv.idRendezVous">
+          
+          <div class="rdv-avatar">
+            <i class="fas fa-user-md"></i>
+          </div>
+          <div class="rdv-info">
+            <div class="rdv-patient">
+              {{ rdv.patient?.nom }} {{ rdv.patient?.prenom }}
+            </div>
+            <div class="rdv-details">
+              <span><i class="fas fa-calendar"></i> {{ formatDate(rdv.dateRdvs) }}</span>
+              <span><i class="fas fa-clock"></i> {{ formatTime(rdv.heureDebut) }}</span>
+              <span><i class="fas fa-stethoscope"></i> {{ rdv.type }}</span>
+            </div>
+          </div>
+          <div class="rdv-status">
+            <i class="fas fa-check-circle"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="showRendezVousModal = false" [disabled]="isLoading">
+          Annuler
+        </button>
+        <button type="button" class="btn-primary" (click)="createFromRendezVous()" 
+                [disabled]="!selectedRendezVous.RendezVousId || isLoading">
+          <i class="fas fa-plus-circle"></i>
+          {{ isLoading ? 'Création...' : 'Créer la Consultation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

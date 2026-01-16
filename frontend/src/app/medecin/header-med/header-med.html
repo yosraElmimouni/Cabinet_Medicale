@@ -1,0 +1,100 @@
+<header class="medical-header">
+  <div class="header-container">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <div class="logo">
+        <i class="fas fa-user-md"></i>
+        <span class="clinic-name">Espace {{ displayRole }}</span>
+      </div>
+    </div>
+
+    <!-- Navigation améliorée -->
+    <nav class="navigation">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a routerLink="/medecin/dashboard" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/medecin/patients" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-user-injured"></i>
+            <span>Patients</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/medecin/Consultation" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-calendar-check"></i>
+            <span>Consultations</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/medecin/agenda" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Agenda</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/medecin/dossiers" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-folder-medical"></i>
+            <span>Dossiers</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/medecin/prescriptions" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-prescription"></i>
+            <span>Prescriptions</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- User Section amélioré -->
+    <div class="user-section">
+      <div class="user-info" *ngIf="currentUser; else loginBtn">
+        <div class="user-avatar">
+          <i class="fas" [ngClass]="currentUser.role.toUpperCase() === 'MEDECIN' ? 'fa-user-md' : 'fa-user'"></i>
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ displayName }}</span>
+          <span class="user-role">{{ displayRole }}</span>
+        </div>
+        <div class="user-menu">
+          <button class="user-menu-btn" (click)="toggleUserMenu()">
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="user-dropdown" *ngIf="showUserMenu">
+            <a routerLink="/profile" class="dropdown-item">
+              <i class="fas fa-user-edit"></i>
+              Modifier Profil
+            </a>
+            <a routerLink="/notifications" class="dropdown-item">
+              <i class="fas fa-bell"></i>
+              Notifications
+              <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+            </a>
+            <a *ngIf="currentUser.role.toUpperCase() === 'MEDECIN'" routerLink="/medecin/specialites" class="dropdown-item">
+              <i class="fas fa-stethoscope"></i>
+              Mes Spécialités
+            </a>
+            <a routerLink="/settings" class="dropdown-item">
+              <i class="fas fa-cog"></i>
+              Paramètres
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="javascript:void(0)" class="dropdown-item logout" (click)="logout()">
+              <i class="fas fa-sign-out-alt"></i>
+              Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+      <ng-template #loginBtn>
+        <a routerLink="/login" class="login-link">
+          <i class="fas fa-sign-in-alt"></i> Connexion
+        </a>
+      </ng-template>
+    </div>
+  </div>
+</header>

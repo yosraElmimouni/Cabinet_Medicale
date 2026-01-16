@@ -1,0 +1,696 @@
+<div class="dashboard-container">
+  <!-- Background effects -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <div class="floating-icon"><i class="fas fa-heartbeat"></i></div>
+      <div class="floating-icon"><i class="fas fa-stethoscope"></i></div>
+      <div class="floating-icon"><i class="fas fa-user-md"></i></div>
+      <div class="floating-icon"><i class="fas fa-pills"></i></div>
+      <div class="floating-icon"><i class="fas fa-file-medical"></i></div>
+      <div class="floating-icon"><i class="fas fa-clipboard-check"></i></div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="welcome-content">
+        <h1><i class="fas fa-folder-medical"></i> Dossiers Médicaux</h1>
+        <p>Gestion des dossiers médicaux et consultations patients</p>
+        <div class="current-time">
+          <i class="fas fa-calendar-alt"></i>
+          <span>{{ formatDate(getCurrentDate()) }} • Dr. Bernard</span>
+        </div>
+      </div>
+      <div class="quick-actions-header">
+        <button class="action-btn primary" (click)="openNewDossierModal()">
+          <i class="fas fa-plus-circle"></i>
+          Nouveau Dossier
+        </button>
+        <button class="action-btn secondary">
+          <i class="fas fa-download"></i>
+          Exporter
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+      <div class="stat-card patients">
+        <div class="stat-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getStats().totalPatients }}</div>
+          <div class="stat-label">Patients</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+{{ getStats().newPatients }} ce mois</span>
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+
+      <div class="stat-card dossiers">
+        <div class="stat-icon">
+          <i class="fas fa-file-medical-alt"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getStats().totalDossiers }}</div>
+          <div class="stat-label">Dossiers Actifs</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>{{ getStats().dossierCompletion }}% complets</span>
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+
+      <div class="stat-card consultations">
+        <div class="stat-icon">
+          <i class="fas fa-stethoscope"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getStats().consultationsToday }}</div>
+          <div class="stat-label">Consultations Aujourd'hui</div>
+          <div class="stat-trend" [class]="getStats().consultationsTrend >= 0 ? 'positive' : 'negative'">
+            <i class="fas" [class.fa-arrow-up]="getStats().consultationsTrend >= 0" 
+               [class.fa-arrow-down]="getStats().consultationsTrend < 0"></i>
+            <span>{{ getStats().consultationsTrend >= 0 ? '+' : '' }}{{ getStats().consultationsTrend }}% vs hier</span>
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+
+      <div class="stat-card documents">
+        <div class="stat-icon">
+          <i class="fas fa-file-pdf"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getStats().totalDocuments }}</div>
+          <div class="stat-label">Documents</div>
+          <div class="stat-trend positive">
+            <i class="fas fa-arrow-up"></i>
+            <span>+{{ getStats().newDocuments }} nouveaux</span>
+          </div>
+        </div>
+        <div class="stat-sparkline"></div>
+      </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="search-filter-section">
+      <div class="search-container">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" 
+                 [(ngModel)]="searchTerm" 
+                 (input)="onSearch()"
+                 placeholder="Rechercher patient, dossier, diagnostic...">
+          <button class="btn-search-clear" *ngIf="searchTerm" (click)="clearSearch()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="filter-options">
+          <div class="filter-group">
+            <label><i class="fas fa-filter"></i> Filtres :</label>
+            <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+              <option value="all">Tous les dossiers</option>
+              <option value="active">Actifs</option>
+              <option value="recent">Récents (7 jours)</option>
+              <option value="urgent">Urgents</option>
+              <option value="complete">Complets</option>
+            </select>
+            <select [(ngModel)]="filterDate" (change)="applyFilters()">
+              <option value="all">Toutes dates</option>
+              <option value="today">Aujourd'hui</option>
+              <option value="week">Cette semaine</option>
+              <option value="month">Ce mois</option>
+              <option value="year">Cette année</option>
+            </select>
+          </div>
+          <button class="btn-advanced-filters">
+            <i class="fas fa-sliders-h"></i>
+            Filtres avancés
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="main-content-grid">
+      <!-- Left Column: Patients List -->
+      <div class="patients-column">
+        <div class="section-header">
+          <h2><i class="fas fa-user-injured"></i> Patients ({{ filteredPatients.length }})</h2>
+          <span class="subtitle">{{ getStats().totalDossiers }} dossiers médicaux</span>
+        </div>
+
+        <div class="patients-list">
+          <div *ngFor="let patient of filteredPatients" 
+               class="patient-card"
+               [class.selected]="selectedPatient?.idPatient === patient.idPatient"
+               (click)="selectPatient(patient)">
+            <div class="patient-header">
+              <div class="patient-avatar">
+                <div class="avatar-circle">
+                  {{ getInitials(patient.prenom, patient.nom) }}
+                </div>
+                <div class="patient-status" [class]="patient.status || 'active'"></div>
+              </div>
+              <div class="patient-info">
+                <h3 class="patient-name">
+                  {{ patient.prenom }} {{ patient.nom }}
+                  <span class="patient-age">{{ getAge(patient.dateNaissance) }} ans</span>
+                </h3>
+                <div class="patient-details">
+                  <span class="detail-item">
+                    <i class="fas fa-id-card"></i> ID: {{ patient.idPatient }}
+                  </span>
+                  <span class="detail-item">
+                    <i class="fas fa-phone"></i> {{ patient.telephone }}
+                  </span>
+                  <span class="detail-item" *ngIf="patient.email">
+                    <i class="fas fa-envelope"></i> {{ patient.email }}
+                  </span>
+                </div>
+              </div>
+              <div class="patient-indicators">
+                <span class="indicator dossier-count" *ngIf="getPatientDossierCount(patient.idPatient) > 0">
+                  <i class="fas fa-folder"></i> {{ getPatientDossierCount(patient.idPatient) }}
+                </span>
+                <span class="indicator last-visit" *ngIf="patient.lastVisit">
+                  Dernière visite: {{ patient.lastVisit }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Patient Medical Summary -->
+            <div class="patient-medical-summary">
+              <div class="summary-item" *ngIf="patient.groupeSanguin">
+                <i class="fas fa-tint"></i>
+                <span>{{ patient.groupeSanguin }}</span>
+              </div>
+              <div class="summary-item" *ngIf="patient.allergies && patient.allergies.length > 0">
+                <i class="fas fa-allergies"></i>
+                <span>{{ patient.allergies.length }} allergie(s)</span>
+              </div>
+              <div class="summary-item" *ngIf="patient.chronicDiseases && patient.chronicDiseases.length > 0">
+                <i class="fas fa-heartbeat"></i>
+                <span>{{ patient.chronicDiseases.length }} pathologie(s) chronique(s)</span>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="patient-actions">
+              <button class="btn-action small" (click)="viewPatientDetails(patient); $event.stopPropagation()">
+                <i class="fas fa-eye"></i> Détails
+              </button>
+              <button class="btn-action small primary" 
+                      (click)="openNewConsultation(patient); $event.stopPropagation()"
+                      *ngIf="getPatientDossier(patient.idPatient)">
+                <i class="fas fa-plus"></i> Consultation
+              </button>
+              <button class="btn-action small secondary" 
+                      (click)="viewMedicalRecords(patient); $event.stopPropagation()"
+                      *ngIf="getPatientDossierCount(patient.idPatient) > 0">
+                <i class="fas fa-folder-open"></i> Dossier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Medical Records Details -->
+      <div class="medical-records-column" *ngIf="selectedPatient && selectedDossier; else noSelection">
+        <!-- Patient Header -->
+        <div class="patient-detail-header">
+          <div class="patient-identity">
+            <div class="patient-main">
+              <h2>
+                <i class="fas fa-user-injured"></i>
+                {{ selectedPatient.prenom }} {{ selectedPatient.nom }}
+              </h2>
+              <div class="patient-meta">
+                <span class="meta-item">
+                  <i class="fas fa-birthday-cake"></i>
+                  {{ formatDate(selectedPatient.dateNaissance) }} ({{ getAge(selectedPatient.dateNaissance) }} ans)
+                </span>
+                <span class="meta-item">
+                  <i class="fas fa-venus-mars"></i>
+                  {{ selectedPatient.genre === 'M' ? 'Homme' : 'Femme' }}
+                </span>
+                <span class="meta-item" *ngIf="selectedPatient.groupeSanguin">
+                  <i class="fas fa-tint"></i>
+                  {{ selectedPatient.groupeSanguin }}
+                </span>
+                <span class="meta-item" *ngIf="selectedPatient.assuranceMedicale">
+                  <i class="fas fa-shield-alt"></i>
+                  {{ selectedPatient.assuranceMedicale }}
+                </span>
+              </div>
+            </div>
+            <div class="patient-contact">
+              <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                {{ selectedPatient.telephone }}
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                {{ selectedPatient.email }}
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ selectedPatient.adresse }}
+              </div>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn-action primary">
+              <i class="fas fa-file-medical-alt"></i>
+              Nouveau Document
+            </button>
+            <button class="btn-action">
+              <i class="fas fa-print"></i>
+              Imprimer
+            </button>
+            <button class="btn-action secondary">
+              <i class="fas fa-edit"></i>
+              Modifier
+            </button>
+          </div>
+        </div>
+
+        <!-- Medical Record Tabs -->
+        <div class="medical-record-tabs">
+          <div class="tabs-navigation">
+            <button class="tab-btn" 
+                    [class.active]="activeTab === 'dossier'"
+                    (click)="activeTab = 'dossier'">
+              <i class="fas fa-file-medical-alt"></i>
+              Dossier Médical
+            </button>
+            <button class="tab-btn" 
+                    [class.active]="activeTab === 'consultations'"
+                    (click)="activeTab = 'consultations'">
+              <i class="fas fa-stethoscope"></i>
+              Consultations
+              <span class="badge">{{ selectedDossier.consultations?.length || 0 }}</span>
+            </button>
+            <button class="tab-btn" 
+                    [class.active]="activeTab === 'documents'"
+                    (click)="activeTab = 'documents'">
+              <i class="fas fa-file-pdf"></i>
+              Documents
+              <span class="badge">{{ selectedDossier.documentsMedicaux?.length || 0 }}</span>
+            </button>
+            <button class="tab-btn" 
+                    [class.active]="activeTab === 'historique'"
+                    (click)="activeTab = 'historique'">
+              <i class="fas fa-history"></i>
+              Historique
+            </button>
+          </div>
+
+          <!-- Dossier Médical Tab -->
+          <div class="tab-content" *ngIf="activeTab === 'dossier'">
+            <div class="dossier-sections">
+              <!-- Antécédents Médicaux -->
+              <div class="dossier-section">
+                <h3><i class="fas fa-history"></i> Antécédents Médicaux</h3>
+                <div class="section-content">
+                  <p>{{ selectedDossier.antMedicaux || 'Aucun antécédent médical renseigné.' }}</p>
+                </div>
+              </div>
+
+              <!-- Antécédents Chirurgicaux -->
+              <div class="dossier-section">
+                <h3><i class="fas fa-user-nurse"></i> Antécédents Chirurgicaux</h3>
+                <div class="section-content">
+                  <p>{{ selectedDossier.antChirurg || 'Aucun antécédent chirurgical renseigné.' }}</p>
+                </div>
+              </div>
+
+              <!-- Allergies -->
+              <div class="dossier-section">
+                <h3><i class="fas fa-allergies"></i> Allergies</h3>
+                <div class="section-content">
+                  <p>{{ selectedDossier.allergies || 'Aucune allergie connue.' }}</p>
+                </div>
+              </div>
+
+              <!-- Traitements en Cours -->
+              <div class="dossier-section">
+                <h3><i class="fas fa-prescription-bottle-alt"></i> Traitements en Cours</h3>
+                <div class="section-content">
+                  <p>{{ selectedDossier.traitementEnCour || 'Aucun traitement en cours.' }}</p>
+                </div>
+              </div>
+
+              <!-- Habitudes de Vie -->
+              <div class="dossier-section">
+                <h3><i class="fas fa-heartbeat"></i> Habitudes de Vie</h3>
+                <div class="section-content">
+                  <p>{{ selectedDossier.habitudes || 'Non renseigné.' }}</p>
+                </div>
+              </div>
+
+              <!-- Informations du Dossier -->
+              <div class="dossier-info-grid">
+                <div class="info-card">
+                  <h4><i class="fas fa-calendar-plus"></i> Informations du Dossier</h4>
+                  <div class="info-content">
+                    <div class="info-row">
+                      <span class="label">Numéro du dossier :</span>
+                      <span class="value">{{ selectedDossier.idDossier }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="label">Date de création :</span>
+                      <span class="value">{{ formatDate(selectedDossier.dateCreation) }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="label">Médecin traitant :</span>
+                      <span class="value">Dr. Bernard (ID: {{ selectedDossier.idMedecin }})</span>
+                    </div>
+                    <div class="info-row" *ngIf="selectedDossier.typeMutuelle">
+                      <span class="label">Type de mutuelle :</span>
+                      <span class="value">{{ selectedDossier.typeMutuelle }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="label">Statut du dossier :</span>
+                      <span class="value status-badge" [class]="getDossierStatus(selectedDossier)">
+                        {{ getDossierStatus(selectedDossier) === 'complet' ? 'Complet' : 'En cours' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Consultations Tab -->
+          <div class="tab-content" *ngIf="activeTab === 'consultations'">
+            <div class="consultations-header">
+              <h3>Historique des Consultations</h3>
+              <button class="btn-add-primary" (click)="addNewConsultation()">
+                <i class="fas fa-plus"></i> Nouvelle Consultation
+              </button>
+            </div>
+
+            <div class="consultations-list" *ngIf="selectedDossier.consultations && selectedDossier.consultations.length > 0">
+              <!-- Tri manuel des consultations par date décroissante -->
+              <div class="consultation-card" 
+                   *ngFor="let consultation of getSortedConsultations(selectedDossier.consultations)"
+                   [class.expanded]="expandedConsultations.has(consultation.idConsultation)">
+                
+                <div class="consultation-header" (click)="toggleConsultation(consultation.idConsultation)">
+                  <div class="consultation-main">
+                    <div class="consultation-type">
+                      <i class="fas fa-calendar-check"></i>
+                      <strong>{{ consultation.type }}</strong>
+                    </div>
+                    <div class="consultation-date">
+                      <i class="fas fa-clock"></i>
+                      {{ formatDateTime(consultation.dateConsultation) }}
+                    </div>
+                    <div class="consultation-doctor">
+                      <i class="fas fa-user-md"></i>
+                      {{ consultation.nomMedecin || 'Dr. Bernard' }}
+                    </div>
+                  </div>
+                  <div class="consultation-status">
+                    <span class="status-badge" [class]="consultation.facture?.statut || 'none'">
+                      <i class="fas fa-file-invoice-dollar"></i>
+                      {{ consultation.facture?.statut || 'Non facturé' }}
+                    </span>
+                    <button class="btn-toggle">
+                      <i class="fas" 
+                         [class.fa-chevron-down]="!expandedConsultations.has(consultation.idConsultation)"
+                         [class.fa-chevron-up]="expandedConsultations.has(consultation.idConsultation)">
+                      </i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Consultation Details -->
+                <div class="consultation-details" *ngIf="expandedConsultations.has(consultation.idConsultation)">
+                  <div class="details-grid">
+                    <!-- Motif et Diagnostic -->
+                    <div class="detail-section">
+                      <h4><i class="fas fa-clipboard-check"></i> Motif & Diagnostic</h4>
+                      <div class="detail-content">
+                        <p><strong>Motif :</strong> {{ consultation.motif || 'Non spécifié' }}</p>
+                        <p><strong>Diagnostic :</strong> {{ consultation.diagnostic || 'Non spécifié' }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Examen Clinique -->
+                    <div class="detail-section">
+                      <h4><i class="fas fa-stethoscope"></i> Examen Clinique</h4>
+                      <div class="detail-content">
+                        <p>{{ consultation.examenClinique || 'Non renseigné' }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Examens Demandés -->
+                    <div class="detail-section">
+                      <h4><i class="fas fa-microscope"></i> Examens Complémentaires</h4>
+                      <div class="detail-content">
+                        <p>{{ consultation.examenSupplementaire || 'Aucun examen demandé' }}</p>
+                        <div *ngIf="consultation.examensDemandes && consultation.examensDemandes.length > 0">
+                          <ul>
+                            <li *ngFor="let examen of consultation.examensDemandes">{{ examen }}</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Traitement Prescrit -->
+                    <div class="detail-section">
+                      <h4><i class="fas fa-prescription-bottle-alt"></i> Traitement Prescrit</h4>
+                      <div class="detail-content">
+                        <p>{{ consultation.traitement || 'Aucun traitement prescrit' }}</p>
+                        <div *ngIf="consultation.prescription">
+                          <p><strong>Prescription :</strong> {{ consultation.prescription }}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Observations -->
+                    <div class="detail-section full-width">
+                      <h4><i class="fas fa-comment-medical"></i> Observations</h4>
+                      <div class="detail-content">
+                        <p>{{ consultation.observations || 'Aucune observation' }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Consultation Actions -->
+                  <div class="consultation-actions">
+                    <div class="action-group">
+                      <button class="btn-action small">
+                        <i class="fas fa-edit"></i> Modifier
+                      </button>
+                      <button class="btn-action small primary">
+                        <i class="fas fa-file-prescription"></i> Générer Ordonnance
+                      </button>
+                      <button class="btn-action small secondary" *ngIf="consultation.facture">
+                        <i class="fas fa-file-invoice"></i> Voir Facture
+                      </button>
+                    </div>
+                    <div class="consultation-meta">
+                      <span class="meta-item">
+                        <i class="fas fa-user-md"></i>
+                        ID Médecin: {{ consultation.idMedecin }}
+                      </span>
+                      <span class="meta-item">
+                        <i class="fas fa-user-injured"></i>
+                        ID Patient: {{ consultation.idPatient }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="no-data" *ngIf="!selectedDossier.consultations || selectedDossier.consultations.length === 0">
+              <i class="fas fa-stethoscope"></i>
+              <h4>Aucune consultation enregistrée</h4>
+              <p>Ce dossier ne contient pas encore de consultation médicale.</p>
+              <button class="btn-add-primary" (click)="addNewConsultation()">
+                <i class="fas fa-plus"></i> Ajouter la première consultation
+              </button>
+            </div>
+          </div>
+
+          <!-- Documents Tab -->
+          <div class="tab-content" *ngIf="activeTab === 'documents'">
+            <div class="documents-header">
+              <h3>Documents Médicaux</h3>
+              <div class="header-actions">
+                <button class="btn-action primary">
+                  <i class="fas fa-upload"></i> Uploader un document
+                </button>
+                <button class="btn-action">
+                  <i class="fas fa-folder-plus"></i> Nouveau dossier
+                </button>
+              </div>
+            </div>
+
+            <div class="documents-grid" *ngIf="selectedDossier.documentsMedicaux && selectedDossier.documentsMedicaux.length > 0">
+              <div class="document-card" *ngFor="let document of selectedDossier.documentsMedicaux; let i = index">
+                <div class="document-icon" [class]="getDocumentType(document)">
+                  <i class="fas" [class.fa-file-pdf]="getDocumentType(document) === 'pdf'" 
+                     [class.fa-file-image]="getDocumentType(document) === 'image'"
+                     [class.fa-file-word]="getDocumentType(document) === 'word'"
+                     [class.fa-file-alt]="getDocumentType(document) === 'other'"></i>
+                </div>
+                <div class="document-info">
+                  <h4 class="document-title">{{ getDocumentName(document) }}</h4>
+                  <div class="document-meta">
+                    <span class="meta-item">
+                      <i class="fas fa-file-alt"></i>
+                      {{ getDocumentType(document).toUpperCase() }}
+                    </span>
+                    <span class="meta-item">
+                      <i class="fas fa-calendar"></i>
+                      {{ formatDate(getCurrentDate()) }}
+                    </span>
+                    <span class="meta-item">
+                      <i class="fas fa-weight-hanging"></i>
+                      {{ getDocumentSize() }}
+                    </span>
+                  </div>
+                  <div class="document-tags">
+                    <span class="tag" *ngIf="isOrdonnance(document)">Ordonnance</span>
+                    <span class="tag" *ngIf="isAnalyse(document)">Analyse</span>
+                    <span class="tag" *ngIf="isRadiologie(document)">Radiologie</span>
+                    <span class="tag" *ngIf="isCertificat(document)">Certificat</span>
+                  </div>
+                </div>
+                <div class="document-actions">
+                  <button class="btn-action small" title="Prévisualiser">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-action small primary" title="Télécharger">
+                    <i class="fas fa-download"></i>
+                  </button>
+                  <button class="btn-action small danger" title="Supprimer">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="no-data" *ngIf="!selectedDossier.documentsMedicaux || selectedDossier.documentsMedicaux.length === 0">
+              <i class="fas fa-file-medical-alt"></i>
+              <h4>Aucun document médical</h4>
+              <p>Aucun document n'a été ajouté à ce dossier médical.</p>
+              <button class="btn-add-primary">
+                <i class="fas fa-upload"></i> Uploader le premier document
+              </button>
+            </div>
+
+            <!-- Document Statistics -->
+            <div class="documents-stats">
+              <h4><i class="fas fa-chart-pie"></i> Statistiques des Documents</h4>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-value">{{ getDocumentStats().ordonnances }}</div>
+                  <div class="stat-label">Ordonnances</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">{{ getDocumentStats().analyses }}</div>
+                  <div class="stat-label">Analyses</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">{{ getDocumentStats().radiologies }}</div>
+                  <div class="stat-label">Radiologies</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">{{ getDocumentStats().certificats }}</div>
+                  <div class="stat-label">Certificats</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">{{ getDocumentStats().autres }}</div>
+                  <div class="stat-label">Autres</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historique Tab -->
+          <div class="tab-content" *ngIf="activeTab === 'historique'">
+            <h3><i class="fas fa-history"></i> Historique des Modifications</h3>
+            <div class="history-timeline">
+              <div class="history-item" *ngFor="let event of getHistoryEvents()">
+                <div class="history-date">{{ event.date }}</div>
+                <div class="history-content">
+                  <div class="history-icon" [class]="event.type">
+                    <i class="fas" [class.fa-user-md]="event.type === 'consultation'"
+                       [class.fa-file-upload]="event.type === 'document'"
+                       [class.fa-edit]="event.type === 'modification'"
+                       [class.fa-folder-plus]="event.type === 'creation'"></i>
+                  </div>
+                  <div class="history-details">
+                    <h4>{{ event.title }}</h4>
+                    <p>{{ event.description }}</p>
+                    <div class="history-meta">
+                      <span class="meta-item">
+                        <i class="fas fa-user"></i> {{ event.user }}
+                      </span>
+                      <span class="meta-item" *ngIf="event.time">
+                        <i class="fas fa-clock"></i> {{ event.time }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Selection Template -->
+      <ng-template #noSelection>
+        <div class="medical-records-column empty-state">
+          <div class="empty-content">
+            <i class="fas fa-folder-open"></i>
+            <h3>Sélectionnez un patient</h3>
+            <p>Choisissez un patient dans la liste pour consulter son dossier médical</p>
+            <div class="empty-stats">
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ getStats().totalPatients }}</div>
+                  <div class="stat-label">Patients</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-file-medical-alt"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ getStats().totalDossiers }}</div>
+                  <div class="stat-label">Dossiers</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">
+                  <i class="fas fa-stethoscope"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ getStats().totalConsultations }}</div>
+                  <div class="stat-label">Consultations</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

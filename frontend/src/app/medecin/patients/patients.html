@@ -1,0 +1,227 @@
+<div class="patients-container">
+  <!-- Background Animé -->
+  <div class="patients-background">
+    <div class="floating-elements">
+      <div class="floating-icon">👨‍🦰</div>
+      <div class="floating-icon">👩</div>
+      <div class="floating-icon">👴</div>
+      <div class="floating-icon">👵</div>
+      <div class="floating-icon">👶</div>
+      <div class="floating-icon">🏥</div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="patients-content">
+    <!-- Header -->
+    <header class="patients-header">
+      <div class="header-left">
+        <h1><i class="fas fa-users"></i> Gestion des Patients</h1>
+        <p>Gérez votre liste de patients et leurs dossiers médicaux</p>
+      </div>
+      <button class="btn-new-patient" (click)="createNewPatient()">
+        <i class="fas fa-user-plus"></i>
+        Nouveau Patient
+      </button>
+    </header>
+
+    <!-- Barre de Contrôle -->
+    <div class="control-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          placeholder="Rechercher un patient..." 
+          [(ngModel)]="searchQuery"
+          (input)="applyFilters()"
+        >
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label><i class="fas fa-filter"></i> Statut</label>
+          <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+            <option value="all">Tous les patients</option>
+            <option value="actif">Actifs</option>
+            <option value="suivi">En suivi</option>
+            <option value="inactif">Inactifs</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><i class="fas fa-sort"></i> Trier par</label>
+          <select [(ngModel)]="sortBy" (change)="applyFilters()">
+            <option value="name">Nom A-Z</option>
+            <option value="age">Âge décroissant</option>
+            <option value="lastVisit">Dernière visite</option>
+          </select>
+        </div>
+
+        <button class="btn-export" (click)="exportPatients()">
+          <i class="fas fa-file-export"></i>
+          Exporter
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistiques Rapides -->
+    <div class="quick-stats">
+      <div class="stat-badge">
+        <div class="stat-value">{{ getTotalPatients() }}</div>
+        <div class="stat-label">Patients total</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getActivePatients() }}</div>
+        <div class="stat-label">Patients actifs</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getScheduledAppointments() }}</div>
+        <div class="stat-label">RDV programmés</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getChronicPatientsCount() }}</div>
+        <div class="stat-label">Patients chroniques</div>
+      </div>
+    </div>
+
+    <!-- Tableau des Patients -->
+    <div class="patients-table-container">
+      <table class="patients-table">
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Âge/Genre</th>
+            <th>Contact</th>
+            <th>Dernière visite</th>
+            <th>Prochain RDV</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let patient of filteredPatients" class="patient-row">
+            <td class="patient-info">
+              <div class="patient-avatar">{{ patient.avatar }}</div>
+              <div>
+                <div class="patient-name">{{ patient.name }}</div>
+                <div class="patient-meta">
+                  <span class="blood-group"><i class="fas fa-tint"></i> {{ patient.bloodGroup }}</span>
+                  <span *ngIf="patient.allergies && patient.allergies.length > 0" class="has-allergies">
+                    <i class="fas fa-exclamation-triangle"></i> Allergies
+                  </span>
+                  <span *ngIf="patient.dossierMedical" class="has-dossier">
+                    <i class="fas fa-file-medical"></i> Dossier
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="age-gender">
+                <div>{{ patient.age }} ans</div>
+                <div class="gender">{{ patient.gender }}</div>
+              </div>
+            </td>
+            <td>
+              <div class="contact-info">
+                <div><i class="fas fa-phone"></i> {{ patient.phone }}</div>
+                <div><i class="fas fa-envelope"></i> {{ patient.email }}</div>
+              </div>
+            </td>
+            <td>
+              <div class="visit-info">
+                <div class="date">{{ patient.lastVisit }}</div>
+                <div class="days-ago">
+                  {{ getDaysAgo(patient.lastVisit) }}
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="next-appointment" [class.no-appointment]="patient.nextAppointment === 'À planifier'">
+                {{ patient.nextAppointment }}
+                <button *ngIf="patient.nextAppointment !== 'À planifier'" 
+                        class="btn-reminder" 
+                        (click)="sendReminder(patient)">
+                  <i class="fas fa-bell"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [class]="getStatusClass(patient.status)">
+                {{ getStatusText(patient.status) }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-view" (click)="viewPatientDetails(patient)" title="Voir dossier médical">
+                  <i class="fas fa-file-medical"></i>
+                </button>
+                <button class="btn-edit" (click)="editPatient(patient)" title="Modifier le patient">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-history" title="Historique médical">
+                  <i class="fas fa-history"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredPatients.length === 0" class="no-results">
+        <i class="fas fa-user-slash"></i>
+        <h3>Aucun patient trouvé</h3>
+        <p>Essayez de modifier vos critères de recherche</p>
+      </div>
+    </div>
+
+    <!-- Panneau d'Informations Rapides -->
+    <div class="quick-info-panel">
+      <h3><i class="fas fa-chart-pie"></i> Répartition par Âge</h3>
+      <div class="age-distribution">
+        <div class="age-group">
+          <div class="age-label">18-30 ans</div>
+          <div class="age-bar">
+            <div class="age-fill" [style.width.%]="getAgePercentage('18-30')"></div>
+          </div>
+          <div class="age-count">{{ getAgeCount('18-30') }}</div>
+        </div>
+        <div class="age-group">
+          <div class="age-label">31-50 ans</div>
+          <div class="age-bar">
+            <div class="age-fill" [style.width.%]="getAgePercentage('31-50')"></div>
+          </div>
+          <div class="age-count">{{ getAgeCount('31-50') }}</div>
+        </div>
+        <div class="age-group">
+          <div class="age-label">51-70 ans</div>
+          <div class="age-bar">
+            <div class="age-fill" [style.width.%]="getAgePercentage('51-70')"></div>
+          </div>
+          <div class="age-count">{{ getAgeCount('51-70') }}</div>
+        </div>
+        <div class="age-group">
+          <div class="age-label">70+ ans</div>
+          <div class="age-bar">
+            <div class="age-fill" [style.width.%]="getAgePercentage('70+')"></div>
+          </div>
+          <div class="age-count">{{ getAgeCount('70+') }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay pour le dossier médical -->
+  <div *ngIf="showDossierMedical" class="dossier-overlay">
+    <div class="dossier-modal">
+      <div class="dossier-header">
+        <h3><i class="fas fa-file-medical"></i> Dossier Médical - {{ selectedPatientName }}</h3>
+      </div>
+      <app-dossier-medical>
+        [patientId]="selectedPatientId!"
+        [dossier]="selectedDossier"
+        (submit)="saveDossierMedical($event)"
+        (cancel)="closeDossierMedical()">
+      </app-dossier-medical>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,202 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.medical-header {
+  background: linear-gradient(135deg, 
+ rgba(28, 6, 52, 0.95) 0%, 
+    rgba(43, 77, 135, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  font-family: 'Inter', sans-serif;
+
+  .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 70px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .logo-section {
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      
+      i {
+        font-size: 1.6rem;
+        color: #fff;
+        background: linear-gradient(45deg, #8B5CF6, #3B82F6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .clinic-name {
+        color: white;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .navigation {
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.5rem 1.5rem;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+
+      .nav-item {
+        .nav-link {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: rgba(255, 255, 255, 0.9);
+          text-decoration: none;
+          padding: 0.6rem 1rem;
+          border-radius: 10px;
+          transition: all 0.3s ease;
+          font-weight: 500;
+          position: relative;
+
+          i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+          }
+
+          &:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            
+            i {
+              transform: translateY(-2px);
+            }
+          }
+
+          &.active {
+            color: white;
+            background: linear-gradient(135deg, #8B5CF6, #1c4484);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: -8px;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 20px;
+              height: 2px;
+              background: white;
+              border-radius: 1px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .auth-section {
+    .login-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+      border: none;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+
+      i {
+        font-size: 1rem;
+        transition: transform 0.3s ease;
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, #7C3AED, #2563EB);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        
+        i {
+          transform: translateX(2px);
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 1024px) {
+    .navigation .nav-menu {
+      gap: 1rem;
+      padding: 0.5rem 1rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header-container {
+      padding: 0 1rem;
+    }
+
+    .navigation {
+      display: none;
+    }
+
+    .auth-section .login-btn span {
+      display: none; // Cacher le texte sur mobile
+    }
+
+    .auth-section .login-btn {
+      padding: 0.7rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      justify-content: center;
+    }
+
+    .logo-section .logo {
+      font-size: 1.2rem;
+      
+      i {
+        font-size: 1.4rem;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-container {
+      padding: 0 0.5rem;
+    }
+
+    .logo-section .logo {
+      font-size: 1.1rem;
+      gap: 8px;
+      
+      i {
+        font-size: 1.3rem;
+      }
+    }
+  }
+}

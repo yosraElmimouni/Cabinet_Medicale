@@ -1,0 +1,150 @@
+<div class="dossier-medical-form">
+  <div class="form-header">
+    <h2>
+      <i class="fas fa-file-medical"></i>
+      {{ isEditing ? 'Modifier' : 'Créer' }} Dossier Médical
+    </h2>
+    <button type="button" class="btn-close" (click)="onCancel()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <form [formGroup]="dossierForm" (ngSubmit)="onSubmit()">
+    <!-- Section Antécédents -->
+    <div class="form-section">
+      <h3><i class="fas fa-history"></i> Antécédents</h3>
+      
+      <div class="form-group">
+        <label for="antMedicaux">Antécédents Médicaux</label>
+        <textarea 
+          id="antMedicaux"
+          formControlName="antMedicaux" 
+          rows="3" 
+          placeholder="Maladies chroniques, hospitalisations, etc."
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="antChirurg">Antécédents Chirurgicaux</label>
+        <textarea 
+          id="antChirurg"
+          formControlName="antChirurg" 
+          rows="2" 
+          placeholder="Interventions chirurgicales"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="allergies">Allergies</label>
+          <input 
+            id="allergies"
+            type="text" 
+            formControlName="allergies" 
+            placeholder="Liste des allergies"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="typeMutuelle">Type de Mutuelle</label>
+          <select id="typeMutuelle" formControlName="typeMutuelle">
+            <option value="">Sélectionner</option>
+            <option value="CNOPS">CNOPS</option>
+            <option value="CNSS">CNSS</option>
+            <option value="RAMED">RAMED</option>
+            <option value="Privée">Privée</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Traitement et Habitudes -->
+    <div class="form-section">
+      <h3><i class="fas fa-pills"></i> Traitement & Habitudes</h3>
+      
+      <div class="form-group">
+        <label for="traitementEnCour">Traitement en Cours</label>
+        <textarea 
+          id="traitementEnCour"
+          formControlName="traitementEnCour" 
+          rows="3" 
+          placeholder="Médicaments prescrits"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="habitudes">Habitudes de Vie</label>
+        <textarea 
+          id="habitudes"
+          formControlName="habitudes" 
+          rows="2" 
+          placeholder="Tabac, alcool, activité physique, etc."
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Section Documents -->
+    <div class="form-section">
+      <h3><i class="fas fa-file-upload"></i> Documents Médicaux</h3>
+      
+      <div class="file-upload">
+        <input 
+          type="file" 
+          #fileInput 
+          (change)="onFileSelected($event)" 
+          style="display: none"
+          accept=".pdf,.doc,.docx,.jpg,.png"
+        >
+        <button type="button" class="btn-upload" (click)="fileInput.click()">
+          <i class="fas fa-upload"></i> Sélectionner un fichier
+        </button>
+        
+        <div *ngIf="selectedFile" class="selected-file">
+          <i class="fas fa-file"></i>
+          <span>{{ selectedFile.name }}</span>
+          <button type="button" class="btn-add" (click)="uploadDocument()">
+            <i class="fas fa-plus"></i> Ajouter
+          </button>
+        </div>
+      </div>
+
+      <div class="documents-list" formArrayName="documentsMedicaux">
+        <div *ngFor="let doc of documentsArray.controls; let i = index" 
+             class="document-item">
+          <i class="fas fa-file-pdf text-danger"></i>
+          <span>{{ doc.value }}</span>
+          <button type="button" class="btn-remove" (click)="removeDocument(i)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        <div *ngIf="documentsArray.length === 0" class="no-documents">
+          <i class="fas fa-folder-open"></i>
+          Aucun document ajouté
+        </div>
+      </div>
+    </div>
+
+    <!-- Informations système -->
+    <div class="system-info" *ngIf="isEditing && dossier">
+      <div class="info-item">
+        <i class="fas fa-calendar"></i>
+        <span>Créé le: {{ dossier.dateCreation | date:'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="info-item">
+        <i class="fas fa-user-md"></i>
+        <span>Médecin ID: {{ dossier.idMedecin }}</span>
+      </div>
+    </div>
+
+    <!-- Boutons de soumission -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="onCancel()">
+        <i class="fas fa-times"></i> Annuler
+      </button>
+      <button type="submit" class="btn-submit">
+        <i class="fas fa-save"></i> {{ isEditing ? 'Mettre à jour' : 'Créer' }} Dossier
+      </button>
+    </div>
+  </form>
+</div>

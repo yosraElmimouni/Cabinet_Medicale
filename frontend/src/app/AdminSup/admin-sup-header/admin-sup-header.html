@@ -1,0 +1,105 @@
+<header class="medical-header">
+  <div class="header-container">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <div class="logo">
+        <i class="fas fa-user-shield"></i>
+        <span class="clinic-name">Espace Admin</span>
+      </div>
+    </div>
+
+    <!-- Navigation améliorée -->
+    <nav class="navigation">
+      <ul class="nav-menu">
+       
+        <li class="nav-item">
+          <a routerLink="/AdminSup/cabinet" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-clinic-medical"></i>
+            <span>Cabinets</span>
+          </a>
+        </li>
+      
+       
+        <li class="nav-item">
+          <a routerLink="/admin/statistiques" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-chart-bar"></i>
+            <span>Stats</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- User Section amélioré -->
+    <div class="user-section">
+      <div class="user-info">
+        <!-- Sélecteur de Cabinet -->
+        <div class="cabinet-selector" *ngIf="cabinets && cabinets.length > 0">
+          <select class="cabinet-select" (change)="onCabinetChange($event)" [value]="currentCabinetId">
+            <option value="">Tous cabinets</option>
+            <option *ngFor="let cabinet of cabinets" [value]="cabinet.id">
+              {{ cabinet.nomCabinet }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="user-avatar">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        
+        <div class="user-menu">
+          <button class="user-menu-btn" (click)="toggleUserMenu()">
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="user-dropdown" *ngIf="showUserMenu">
+            <!-- User Info in Dropdown -->
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-avatar">
+                <i class="fas fa-user-shield"></i>
+              </div>
+              <div class="dropdown-user-details">
+                <span class="dropdown-user-name">{{ adminName }}</span>
+                <span class="dropdown-user-role">Administrateur</span>
+                <span class="dropdown-cabinet-info" *ngIf="currentCabinet">
+                  <i class="fas fa-clinic-medical"></i> {{ currentCabinet.nomCabinet }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <a href="#" class="dropdown-item" (click)="switchCabinet()">
+              <i class="fas fa-exchange-alt"></i>
+              Changer de Cabinet
+            </a>
+            <a routerLink="/admin/profil" class="dropdown-item">
+              <i class="fas fa-user-edit"></i>
+              Mon Profil
+            </a>
+            <a href="#" class="dropdown-item" (click)="openNotifications()">
+              <i class="fas fa-bell"></i>
+              Notifications
+              <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+            </a>
+            <a routerLink="/admin/audit" class="dropdown-item">
+              <i class="fas fa-history"></i>
+              Journal
+            </a>
+            <a routerLink="/admin/backup" class="dropdown-item">
+              <i class="fas fa-database"></i>
+              Sauvegarde
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item" (click)="goToSuperAdmin()" *ngIf="isSuperAdmin">
+              <i class="fas fa-crown"></i>
+              Super Admin
+            </a>
+            <a href="#" class="dropdown-item logout" (click)="logout()">
+              <i class="fas fa-sign-out-alt"></i>
+              Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

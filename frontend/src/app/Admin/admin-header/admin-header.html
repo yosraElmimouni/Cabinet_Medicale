@@ -1,0 +1,119 @@
+<header class="medical-header">
+  <div class="header-container">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <div class="logo">
+        <i class="fas fa-user-shield"></i>
+        <span class="clinic-name">Admin - {{ currentCabinet?.nom || 'Cabinet Médical' }}</span>
+      </div>
+    </div>
+
+    <!-- Navigation améliorée -->
+    <nav class="navigation">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a routerLink="/Admin/dashboard" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a routerLink="/Admin/medes" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-user-md"></i>
+            <span>Médecins</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/Admin/sec" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-user-nurse"></i>
+            <span>Secrétaires</span>
+          </a>
+        </li>
+       
+        <li class="nav-item">
+          <a routerLink="/admin/statistiques" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-chart-bar"></i>
+            <span>Stats</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- User Section amélioré -->
+    <div class="user-section">
+      <div class="user-info">
+        <!-- Affichage du Cabinet actuel (pas de sélecteur) -->
+        <div class="cabinet-info">
+          <div class="cabinet-display">
+            <i class="fas fa-clinic-medical"></i>
+            <span class="cabinet-name">{{ currentCabinet?.nom || 'Cabinet' }}</span>
+          </div>
+          <div class="cabinet-ville" *ngIf="currentCabinet">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ currentCabinet.ville }}</span>
+          </div>
+        </div>
+        
+        <div class="user-avatar">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        
+        <div class="user-menu">
+          <button class="user-menu-btn" (click)="toggleUserMenu()">
+            <span class="user-name-short">{{ getInitials(adminName) }}</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="user-dropdown" *ngIf="showUserMenu">
+            <!-- User Info in Dropdown -->
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-avatar">
+                <span>{{ getInitials(adminName) }}</span>
+              </div>
+              <div class="dropdown-user-details">
+                <span class="dropdown-user-name">{{ adminName }}</span>
+                <span class="dropdown-user-role">Administrateur</span>
+                <span class="dropdown-cabinet-info">
+                  <i class="fas fa-clinic-medical"></i> {{ currentCabinet?.nom || 'Cabinet' }}
+                </span>
+                <span class="dropdown-cabinet-ville" *ngIf="currentCabinet">
+                  <i class="fas fa-map-marker-alt"></i> {{ currentCabinet.ville }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <a routerLink="/admin/profil" class="dropdown-item" (click)="showUserMenu = false">
+              <i class="fas fa-user-edit"></i>
+              Mon Profil
+            </a>
+            <a href="#" class="dropdown-item" (click)="openNotifications(); showUserMenu = false">
+              <i class="fas fa-bell"></i>
+              Notifications
+              <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+            </a>
+            <a routerLink="/admin/audit" class="dropdown-item" (click)="showUserMenu = false">
+              <i class="fas fa-history"></i>
+              Journal
+            </a>
+            <a routerLink="/admin/backup" class="dropdown-item" (click)="showUserMenu = false">
+              <i class="fas fa-database"></i>
+              Sauvegarde
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item" (click)="switchCabinet(); showUserMenu = false" *ngIf="cabinets.length > 1">
+              <i class="fas fa-exchange-alt"></i>
+              Changer de Cabinet
+            </a>
+            <div class="dropdown-divider" *ngIf="cabinets.length > 1"></div>
+            <a href="#" class="dropdown-item logout" (click)="logout(); showUserMenu = false">
+              <i class="fas fa-sign-out-alt"></i>
+              Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

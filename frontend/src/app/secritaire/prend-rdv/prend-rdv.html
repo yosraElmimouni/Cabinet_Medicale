@@ -1,0 +1,488 @@
+<div class="rdv-container">
+  <!-- Background Animé -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <div class="floating-icon"><i class="fas fa-calendar-check"></i></div>
+      <div class="floating-icon"><i class="fas fa-clock"></i></div>
+      <div class="floating-icon"><i class="fas fa-user-md"></i></div>
+      <div class="floating-icon"><i class="fas fa-calendar-plus"></i></div>
+      <div class="floating-icon"><i class="fas fa-hospital"></i></div>
+      <div class="floating-icon"><i class="fas fa-stethoscope"></i></div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Header Secrétaire -->
+    
+
+    <!-- Message de succès -->
+    <div class="success-message" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <!-- Message d'erreur -->
+    <div class="error-message" *ngIf="errorMessage" style="background: #fee; color: #c33; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+    </div>
+
+    <!-- Indicateur de chargement -->
+    <div *ngIf="isLoading" style="text-align: center; padding: 2rem;">
+      <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #4CAF50;"></i>
+      <p>Chargement...</p>
+    </div>
+
+    <!-- Section de Bienvenue -->
+    <section class="welcome-section">
+      <div class="welcome-content">
+        <h1>Gestion des Rendez-vous 📅</h1>
+        <p>Planifiez et gérez les rendez-vous des patients</p>
+        <div class="current-time">
+          <i class="fas fa-clock"></i>
+          {{ currentDate | date:'HH:mm' }} • {{ currentDate | date:'EEEE d MMMM yyyy' }}
+        </div>
+      </div>
+      <div class="quick-actions-header">
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Rechercher un rendez-vous..." 
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            class="search-input">
+        </div>
+        <button class="action-btn primary" (click)="showAddForm = true; isEditing = false; resetForm()">
+          <i class="fas fa-calendar-plus"></i>
+          Nouveau RDV
+        </button>
+        <button class="action-btn secondary" (click)="exportRendezVous()">
+          <i class="fas fa-file-export"></i>
+          Exporter
+        </button>
+      </div>
+    </section>
+
+    <!-- Formulaire d'Ajout/Modification de Rendez-vous -->
+    <section class="add-rdv-section" *ngIf="showAddForm">
+      <div class="section-header">
+        <h3>
+          <i class="fas" [class.fa-calendar-plus]="!isEditing" [class.fa-edit]="isEditing"></i>
+          {{ isEditing ? 'Modifier le Rendez-vous' : 'Prendre un Nouveau Rendez-vous' }}
+        </h3>
+        <button class="close-btn" (click)="showAddForm = false; resetForm()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form class="rdv-form" #rdvForm="ngForm" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <!-- Sélection du Patient -->
+          <div class="form-group full-width">
+            <label for="patient"><i class="fas fa-user"></i> Patient *</label>
+            <select 
+              id="patient" 
+              name="patient" 
+              [(ngModel)]="newRendezVous.patientId" 
+              required
+              #patient="ngModel"
+              (change)="onPatientChange()">
+              <option value="">Sélectionnez un patient</option>
+              <option *ngFor="let patient of availablePatients" [value]="patient.id">
+                {{ patient.prenom }} {{ patient.nom }} - {{ patient.cin }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="patient.invalid && (patient.dirty || patient.touched)">
+              La sélection d'un patient est requise
+            </div>
+          </div>
+
+          <!-- Informations du Patient Sélectionné -->
+          <div class="patient-info-card" *ngIf="selectedPatient">
+            <div class="patient-header">
+              <div class="patient-avatar">
+                {{ selectedPatient.prenom.charAt(0) }}{{ selectedPatient.nom.charAt(0) }}
+              </div>
+              <div class="patient-details">
+                <h4>{{ selectedPatient.prenom }} {{ selectedPatient.nom }}</h4>
+                <p><i class="fas fa-id-card"></i> {{ selectedPatient.cin }}</p>
+                <p><i class="fas fa-phone"></i> {{ selectedPatient.numTel }}</p>
+                <p><i class="fas fa-birthday-cake"></i> {{ calculateAge(selectedPatient.dateNaissance) }} ans</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sélection du Médecin -->
+          <div class="form-group">
+            <label for="medecin"><i class="fas fa-user-md"></i> Médecin *</label>
+            <select 
+              id="medecin" 
+              name="medecin" 
+              [(ngModel)]="newRendezVous.medecinId" 
+              required
+              #medecin="ngModel">
+              <option value="">Sélectionnez un médecin</option>
+              <option *ngFor="let medecin of medecins" [value]="medecin.id">
+                Dr. {{ medecin.prenom }} {{ medecin.nom }} - {{ medecin.specialite }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="medecin.invalid && (medecin.dirty || medecin.touched)">
+              La sélection d'un médecin est requise
+            </div>
+          </div>
+
+          <!-- Date du Rendez-vous -->
+          <div class="form-group">
+            <label for="date"><i class="fas fa-calendar-day"></i> Date *</label>
+            <input 
+              type="date" 
+              id="date" 
+              name="date" 
+              [(ngModel)]="newRendezVous.date" 
+              required
+              #date="ngModel"
+              [min]="minDate"
+              (change)="onDateChange()">
+            <div class="error-message" *ngIf="date.invalid && (date.dirty || date.touched)">
+              La date est requise
+            </div>
+          </div>
+
+          <!-- Heure de Début -->
+          <div class="form-group">
+            <label for="heureDebut"><i class="fas fa-clock"></i> Heure de Début *</label>
+            <select 
+              id="heureDebut" 
+              name="heureDebut" 
+              [(ngModel)]="newRendezVous.heureDebut" 
+              required
+              #heureDebut="ngModel"
+              (change)="onHeureChange()">
+              <option value="">Sélectionnez l'heure</option>
+              <option *ngFor="let heure of heuresDisponibles" [value]="heure">
+                {{ heure }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="heureDebut.invalid && (heureDebut.dirty || heureDebut.touched)">
+              L'heure de début est requise
+            </div>
+          </div>
+
+          <!-- Heure de Fin -->
+          <div class="form-group">
+            <label for="heureFin"><i class="fas fa-clock"></i> Heure de Fin</label>
+            <input 
+              type="text" 
+              id="heureFin" 
+              name="heureFin" 
+              [(ngModel)]="newRendezVous.heureFin" 
+              readonly
+              class="readonly-field">
+          </div>
+
+          <!-- Durée -->
+          <div class="form-group">
+            <label for="duree"><i class="fas fa-stopwatch"></i> Durée</label>
+            <select 
+              id="duree" 
+              name="duree" 
+              [(ngModel)]="newRendezVous.duree" 
+              (change)="onDureeChange()">
+              <option value="30">30 minutes</option>
+              <option value="45">45 minutes</option>
+              <option value="60">1 heure</option>
+              <option value="90">1 heure 30</option>
+            </select>
+          </div>
+
+          <!-- Type de Consultation -->
+          <div class="form-group">
+            <label for="typeConsultation"><i class="fas fa-stethoscope"></i> Type *</label>
+            <select 
+              id="typeConsultation" 
+              name="typeConsultation" 
+              [(ngModel)]="newRendezVous.typeConsultation" 
+              required
+              #typeConsultation="ngModel">
+              <option value="">Sélectionnez le type</option>
+              <option value="Consultation générale">Consultation générale</option>
+              <option value="Consultation spécialisée">Consultation spécialisée</option>
+              <option value="Suivi">Suivi</option>
+              <option value="Urgence">Urgence</option>
+              <option value="Contrôle">Contrôle</option>
+              <option value="Vaccination">Vaccination</option>
+            </select>
+            <div class="error-message" *ngIf="typeConsultation.invalid && (typeConsultation.dirty || typeConsultation.touched)">
+              Le type de consultation est requis
+            </div>
+          </div>
+
+          <!-- Motif -->
+          
+          <!-- Notes -->
+          <div class="form-group full-width">
+            <label for="notes"><i class="fas fa-notes-medical"></i> Notes supplémentaires</label>
+            <textarea 
+              id="notes" 
+              name="notes" 
+              [(ngModel)]="newRendezVous.notes"
+              placeholder="Notes supplémentaires pour le médecin..."
+              rows="2"></textarea>
+          </div>
+
+          <!-- Statut -->
+          <div class="form-group" *ngIf="isEditing">
+            <label for="statut"><i class="fas fa-circle"></i> Statut</label>
+            <select 
+              id="statut" 
+              name="statut" 
+              [(ngModel)]="newRendezVous.statut">
+              <option value="planifie">Planifié</option>
+              <option value="confirme">Confirmé</option>
+              <option value="annule">Annulé</option>
+              <option value="termine">Terminé</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Indicateur de Conflit -->
+        <div class="conflict-alert" *ngIf="hasConflict">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Attention : Conflit d'horaire détecté avec un autre rendez-vous</span>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="onCancel()">
+            <i class="fas fa-times"></i>
+            Annuler
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="!rdvForm.valid || hasConflict">
+            <i class="fas" [class.fa-save]="isEditing" [class.fa-calendar-check]="!isEditing"></i>
+            {{ isEditing ? 'Modifier le RDV' : 'Planifier le RDV' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Liste des Rendez-vous -->
+    <section class="rdv-section">
+      <div class="section-header">
+        <h3><i class="fas fa-list"></i> Rendez-vous à venir ({{ filteredRendezVous.length }})</h3>
+        <div class="view-options">
+          <button class="view-btn active" [class.active]="viewMode === 'list'" title="Vue liste" (click)="viewMode = 'list'">
+            <i class="fas fa-th-list"></i>
+          </button>
+          <button class="view-btn" [class.active]="viewMode === 'calendar'" title="Vue calendrier" (click)="viewMode = 'calendar'">
+            <i class="fas fa-calendar"></i>
+          </button>
+          <button class="view-btn" [class.active]="viewMode === 'grid'" title="Vue grille" (click)="viewMode = 'grid'">
+            <i class="fas fa-th-large"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="filters-section">
+        <div class="filter-group">
+          <label for="filterDate">Filtrer par date:</label>
+          <input type="date" id="filterDate" [(ngModel)]="filterDate" (change)="onFilterChange()">
+        </div>
+        <div class="filter-group">
+          <label for="filterMedecin">Filtrer par médecin:</label>
+          <select id="filterMedecin" [(ngModel)]="filterMedecin" (change)="onFilterChange()">
+            <option value="">Tous les médecins</option>
+            <option *ngFor="let medecin of medecins" [value]="medecin.id">
+              Dr. {{ medecin.prenom }} {{ medecin.nom }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterStatut">Filtrer par statut:</label>
+          <select id="filterStatut" [(ngModel)]="filterStatut" (change)="onFilterChange()">
+            <option value="">Tous les statuts</option>
+            <option value="planifie">Planifié</option>
+            <option value="confirme">Confirmé</option>
+            <option value="annule">Annulé</option>
+            <option value="termine">Terminé</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Vue Tableau -->
+      <div class="rdv-table" *ngIf="viewMode === 'list'">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Médecin</th>
+              <th>Date & Heure</th>
+              <th>Type</th>
+              <th>Motif</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rdv of filteredRendezVous" [class]="'statut-' + rdv.statut">
+              <td class="patient-cell">
+                <div class="patient-info-small">
+                  <strong>{{ getPatientName(rdv.patientId) }}</strong>
+                  <div class="patient-cin">{{ getPatientCIN(rdv.patientId) }}</div>
+                </div>
+              </td>
+              <td class="medecin-cell">
+                {{ getMedecinName(rdv.medecinId) }}
+                <div class="specialite">{{ getMedecinSpecialite(rdv.medecinId) }}</div>
+              </td>
+              <td class="datetime-cell">
+                <div class="date">{{ rdv.date | date:'dd/MM/yyyy' }}</div>
+                <div class="time">{{ rdv.heureDebut }} - {{ rdv.heureFin }}</div>
+              </td>
+              <td>
+                <span class="type-badge">{{ rdv.typeConsultation }}</span>
+              </td>
+              <td class="motif-cell">
+                {{ (rdv.motif | slice:0:30) + (rdv.motif.length > 30 ? '...' : '') }}
+              </td>
+              <td>
+                <span class="statut-badge" [class]="rdv.statut">
+                  {{ getStatutText(rdv.statut) }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button class="icon-btn edit" title="Modifier" (click)="editRendezVous(rdv)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="icon-btn confirm" title="Confirmer" (click)="confirmRendezVous(rdv)" *ngIf="rdv.statut === 'planifie'">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="icon-btn cancel" title="Annuler" (click)="cancelRendezVous(rdv)" *ngIf="rdv.statut !== 'annule' && rdv.statut !== 'termine'">
+                  <i class="fas fa-times"></i>
+                </button>
+                <button class="icon-btn danger" title="Supprimer" (click)="deleteRendezVous(rdv)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Vue Calendrier -->
+      <div class="calendar-view" *ngIf="viewMode === 'calendar'">
+        <div class="calendar-header">
+          <button class="nav-btn" (click)="previousWeek()">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <h4>Semaine du {{ getWeekRange() }}</h4>
+          <button class="nav-btn" (click)="nextWeek()">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day" *ngFor="let day of weekDays">
+            <div class="day-header">
+              <div class="day-name">{{ day.name }}</div>
+              <div class="day-date">{{ day.date | date:'dd/MM' }}</div>
+            </div>
+            <div class="day-rdvs">
+              <div *ngFor="let rdv of getRendezVousForDay(day.date)" 
+                   class="rdv-item" 
+                   [class]="'statut-' + rdv.statut"
+                   (click)="editRendezVous(rdv)">
+                <div class="rdv-time">{{ rdv.heureDebut }}</div>
+                <div class="rdv-patient">{{ getPatientName(rdv.patientId) }}</div>
+                <div class="rdv-medecin">{{ getMedecinName(rdv.medecinId) }}</div>
+                <div class="rdv-type">{{ rdv.typeConsultation }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vue Grille -->
+      <div class="rdv-grid" *ngIf="viewMode === 'grid'">
+        <div class="rdv-card" *ngFor="let rdv of filteredRendezVous" [class]="'statut-' + rdv.statut">
+          <div class="rdv-header">
+            <div class="rdv-date-time">
+              <div class="date">{{ rdv.date | date:'dd/MM/yyyy' }}</div>
+              <div class="time">{{ rdv.heureDebut }} - {{ rdv.heureFin }}</div>
+            </div>
+            <div class="rdv-actions">
+              <button class="icon-btn edit" title="Modifier" (click)="editRendezVous(rdv)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="icon-btn danger" title="Supprimer" (click)="deleteRendezVous(rdv)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="rdv-patient-info">
+            <div class="patient-avatar-small">
+              {{ getPatientInitials(rdv.patientId) }}
+            </div>
+            <div class="patient-details">
+              <h4>{{ getPatientName(rdv.patientId) }}</h4>
+              <p><i class="fas fa-id-card"></i> {{ getPatientCIN(rdv.patientId) }}</p>
+            </div>
+          </div>
+
+          <div class="rdv-medecin-info">
+            <i class="fas fa-user-md"></i>
+            <span>{{ getMedecinName(rdv.medecinId) }}</span>
+            <span class="specialite">({{ getMedecinSpecialite(rdv.medecinId) }})</span>
+          </div>
+
+          <div class="rdv-details">
+            <div class="detail-item">
+              <i class="fas fa-stethoscope"></i>
+              <span>{{ rdv.typeConsultation }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-file-medical"></i>
+              <span>{{ (rdv.motif | slice:0:40) + (rdv.motif.length > 40 ? '...' : '') }}</span>
+            </div>
+          </div>
+
+          <div class="rdv-footer">
+            <div class="statut-badge" [class]="rdv.statut">
+              {{ getStatutText(rdv.statut) }}
+            </div>
+            <div class="rdv-actions-mini">
+              <button class="icon-btn-mini confirm" 
+                      title="Confirmer" 
+                      (click)="confirmRendezVous(rdv)" 
+                      *ngIf="rdv.statut === 'planifie'">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="icon-btn-mini cancel" 
+                      title="Annuler" 
+                      (click)="cancelRendezVous(rdv)" 
+                      *ngIf="rdv.statut !== 'annule' && rdv.statut !== 'termine'">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message si aucun rendez-vous trouvé -->
+      <div class="no-rdv" *ngIf="filteredRendezVous.length === 0">
+        <i class="fas fa-calendar-times"></i>
+        <h4>Aucun rendez-vous trouvé</h4>
+        <p *ngIf="searchTerm || filterDate || filterMedecin || filterStatut">
+          Aucun rendez-vous ne correspond à vos critères de recherche.
+        </p>
+        <p *ngIf="!searchTerm && !filterDate && !filterMedecin && !filterStatut">
+          Aucun rendez-vous n'est planifié pour le moment.
+        </p>
+        <button class="action-btn primary" (click)="showAddForm = true; isEditing = false; resetForm()">
+          <i class="fas fa-calendar-plus"></i>
+          Planifier le premier rendez-vous
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="agenda-container">
+  <!-- Background Animé -->
+  <div class="agenda-background">
+    <div class="floating-elements">
+      <div class="floating-icon">📅</div>
+      <div class="floating-icon">⏰</div>
+      <div class="floating-icon">👨‍⚕️</div>
+      <div class="floating-icon">💊</div>
+      <div class="floating-icon">🏥</div>
+      <div class="floating-icon">📋</div>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <div class="agenda-content">
+    <!-- Header -->
+    <header class="agenda-header">
+      <div class="header-left">
+        <h1><i class="fas fa-calendar-alt"></i> Agenda Médical</h1>
+        <p>Gérez vos rendez-vous et votre planning</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-today" (click)="loadDoctorAppointments()" [disabled]="isLoading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+          Actualiser
+        </button>
+        <button class="btn-new-appointment">
+          <i class="fas fa-plus-circle"></i>
+          Nouveau RDV
+        </button>
+      </div>
+    </header>
+
+    <!-- Indicateur de chargement -->
+    <div *ngIf="isLoading" class="loading-overlay" style="text-align: center; padding: 20px; background: rgba(255,255,255,0.8); border-radius: 10px; margin-bottom: 20px;">
+      <i class="fas fa-spinner fa-spin fa-2x" style="color: #3b82f6;"></i>
+      <p>Chargement de vos rendez-vous...</p>
+    </div>
+
+    <!-- Statistiques Rapides -->
+    <div class="quick-stats">
+      <div class="stat-badge">
+        <div class="stat-value">{{ appointments.length }}</div>
+        <div class="stat-label">RDV total</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getConfirmedCount() }}</div>
+        <div class="stat-label">Confirmés</div>
+      </div>
+      <div class="stat-badge">
+        <div class="stat-value">{{ getPendingCount() }}</div>
+        <div class="stat-label">En attente</div>
+      </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="agenda-main">
+      <!-- Calendrier -->
+      <div class="calendar-container" style="width: 100%;">
+        <div class="calendar-header">
+          <h2><i class="fas fa-calendar-check"></i> Planning</h2>
+        </div>
+        
+        <!-- FullCalendar -->
+        <div class="fullcalendar-wrapper">
+          <full-calendar [options]="calendarOptions"></full-calendar>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

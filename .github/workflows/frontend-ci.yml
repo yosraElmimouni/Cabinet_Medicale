@@ -1,0 +1,56 @@
+name: Frontend CI/CD with SonarQube
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run Tests with Coverage
+        run: |
+          cd frontend
+          npm test -- --coverage --watchAll=false
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: frontend
+          args: >
+            -Dsonar.projectKey=medical-clinic-frontend
+            -Dsonar.projectName="Medical Clinic Frontend"
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts
+            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
+
+      - name: Build Docker Image
+        run: |
+          cd frontend
+          docker build -t medical-frontend .

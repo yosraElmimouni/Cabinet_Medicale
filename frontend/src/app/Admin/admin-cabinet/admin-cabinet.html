@@ -1,0 +1,329 @@
+<div class="container-fluid py-4">
+  <!-- Background Effects -->
+  <div class="dashboard-background">
+    <div class="floating-elements">
+      <i class="floating-icon bi bi-building"></i>
+      <i class="floating-icon bi bi-hospital"></i>
+      <i class="floating-icon bi bi-shield-check"></i>
+      <i class="floating-icon bi bi-people"></i>
+      <i class="floating-icon bi bi-graph-up"></i>
+      <i class="floating-icon bi bi-calendar-check"></i>
+    </div>
+    <div class="pulse-effect"></div>
+  </div>
+
+  <!-- Header avec boutons bien organisés -->
+  <div class="dashboard-header">
+    <div class="header-title">
+      <h1>Gestion des Cabinets</h1>
+      <p>Administrez les cabinets médicaux de votre plateforme</p>
+    </div>
+    <div class="header-actions">
+      <button class="action-btn secondary" (click)="onSearch()" title="Actualiser">
+        <i class="bi bi-arrow-clockwise"></i>
+        Actualiser
+      </button>
+      <button class="action-btn primary" (click)="toggleAddForm()">
+        <i class="bi bi-plus-circle"></i>
+        {{ isEditMode ? 'Modifier Cabinet' : (showAddForm ? 'Annuler' : 'Nouveau Cabinet') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages d'alerte -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle me-2"></i>
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+
+  <!-- Formulaire (apparaît/disparaît) -->
+  <div *ngIf="showAddForm" class="cabinet-form-section" id="cabinet-form">
+    <div class="form-header">
+      <h2>
+        <i class="bi bi-building me-2"></i>
+        {{ isEditMode ? 'Modifier Cabinet' : 'Nouveau Cabinet' }}
+      </h2>
+      <button class="btn-close-form" (click)="resetForm(); showAddForm = false">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="addCabinet()" #cabinetForm="ngForm">
+      <div class="row">
+        <!-- Logo Upload -->
+        <div class="col-md-3 mb-3">
+          <label class="form-label fw-semibold">
+            <i class="bi bi-image me-1"></i>Logo
+          </label>
+          <div class="logo-upload">
+            <div *ngIf="logoPreview" class="logo-preview">
+              <img [src]="logoPreview" alt="Aperçu du logo">
+              <button type="button" class="btn-remove-logo" (click)="removeLogo()">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+            <div class="upload-area" (click)="fileInput.click()" *ngIf="!logoPreview">
+              <i class="bi bi-cloud-upload"></i>
+              <p>Cliquez pour uploader</p>
+              <p class="small">PNG, JPG, max 5MB</p>
+              <input type="file" #fileInput class="file-input" 
+                     accept="image/*" (change)="onFileSelected($event)" hidden>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire principal -->
+        <div class="col-md-9">
+          <div class="row">
+            <!-- Ligne 1 -->
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-building me-1"></i>Nom du Cabinet *
+                </label>
+                <input type="text" class="form-control" 
+                       [(ngModel)]="newCabinet.nomCabinet" 
+                       name="nomCabinet" 
+                       placeholder="Entrez le nom du cabinet"
+                       required>
+                <div class="form-hint">Nom officiel du cabinet</div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-telephone me-1"></i>Téléphone *
+                </label>
+                <input type="tel" class="form-control" 
+                       [(ngModel)]="newCabinet.teleCabinet" 
+                       name="teleCabinet" 
+                       placeholder="Ex: 01 23 45 67 89"
+                       required>
+                <div class="form-hint">Numéro de contact principal</div>
+              </div>
+            </div>
+
+            <!-- Ligne 2 -->
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-envelope me-1"></i>Email *
+                </label>
+                <input type="email" class="form-control" 
+                       [(ngModel)]="newCabinet.emailCabinet" 
+                       name="emailCabinet" 
+                       placeholder="contact@cabinet.fr"
+                       required>
+                <div class="form-hint">Email de contact</div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-shield-check me-1"></i>Statut
+                </label>
+                <select class="form-select" 
+                        [(ngModel)]="newCabinet.statut" 
+                        name="statut">
+                  <option value="ACTIF">Actif</option>
+                  <option value="INACTIF">Inactif</option>
+                  <option value="SUSPENDU">Suspendu</option>
+                </select>
+                <div class="form-hint">Statut du cabinet</div>
+              </div>
+            </div>
+
+            <!-- Ligne 3 -->
+            <div class="col-12 mb-3">
+              <div class="form-group">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-geo-alt me-1"></i>Adresse *
+                </label>
+                <textarea class="form-control" 
+                          [(ngModel)]="newCabinet.adresseCabinet" 
+                          name="adresseCabinet" 
+                          rows="3" 
+                          placeholder="Adresse complète du cabinet"
+                          required></textarea>
+                <div class="form-hint">Adresse postale complète</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions du formulaire -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-cancel" 
+                (click)="resetForm(); showAddForm = false" 
+                [disabled]="isSubmitting">
+          <i class="bi bi-x-circle me-1"></i> Annuler
+        </button>
+        <button type="submit" class="btn btn-submit" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isSubmitting" 
+             [class]="isEditMode ? 'bi bi-pencil me-1' : 'bi bi-check-circle me-1'"></i>
+          {{ isEditMode ? 'Modifier' : 'Créer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  
+
+  <!-- Section Filtrage (CORRIGÉE) -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <!-- Recherche avec icône -->
+      <div class="search-wrapper">
+        <input type="text" class="search-input" 
+               placeholder="Rechercher par nom, adresse, email, téléphone..."
+               [(ngModel)]="searchTerm" 
+               (keyup.enter)="onSearch()">
+        <button class="search-btn" type="button" (click)="onSearch()">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+      
+      <!-- Filtre statut avec icône -->
+      <div class="filter-wrapper">
+        <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+          <option value="ALL">Tous les statuts</option>
+          <option value="ACTIF">Actif</option>
+          <option value="INACTIF">Inactif</option>
+          <option value="SUSPENDU">Suspendu</option>
+        </select>
+      </div>
+      
+      <!-- Pagination avec icône -->
+      <div class="pagination-wrapper">
+        <select class="pagination-select" [(ngModel)]="itemsPerPage" 
+                (change)="changeItemsPerPage(itemsPerPage)">
+          <option value="5">5 par page</option>
+          <option value="10" selected>10 par page</option>
+          <option value="20">20 par page</option>
+          <option value="50">50 par page</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p>Chargement des cabinets en cours...</p>
+  </div>
+
+  <!-- Tableau des cabinets -->
+  <div *ngIf="!isLoading" class="cabinets-table-section">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th data-label="Logo"></th>
+            <th data-label="Nom">Nom</th>
+            <th data-label="Adresse">Adresse</th>
+            <th data-label="Email">Email</th>
+            <th data-label="Téléphone">Téléphone</th>
+            <th data-label="Statut">Statut</th>
+            <th data-label="Créé le">Créé le</th>
+            <th data-label="Actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- État vide -->
+          <tr *ngIf="paginatedCabinets.length === 0">
+            <td colspan="8">
+              <div class="empty-state text-center">
+                <i class="bi bi-building"></i>
+                <p>Aucun cabinet trouvé</p>
+                <button class="btn btn-primary mt-3" (click)="toggleAddForm()">
+                  <i class="bi bi-plus-circle me-1"></i> Créer un cabinet
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Liste des cabinets -->
+          <tr *ngFor="let cabinet of paginatedCabinets">
+            <td data-label="Logo">
+              <div class="logo-cell">
+                <img *ngIf="cabinet.logo" [src]="cabinet.logo" alt="Logo" class="logo-img">
+                <div *ngIf="!cabinet.logo" class="no-logo">
+                  <!-- Icon will be added via CSS -->
+                </div>
+              </div>
+            </td>
+            <td data-label="Nom">
+              <strong>{{ cabinet.nomCabinet }}</strong>
+            </td>
+            <td data-label="Adresse">
+              <small class="text-muted">{{ cabinet.adresseCabinet }}</small>
+            </td>
+            <td data-label="Email">{{ cabinet.emailCabinet }}</td>
+            <td data-label="Téléphone">{{ cabinet.teleCabinet }}</td>
+            <td data-label="Statut">
+              <span [class]="getStatusClass(cabinet.statut)">
+                {{ getStatusText(cabinet.statut) }}
+              </span>
+            </td>
+            <td data-label="Créé le">
+              <small *ngIf="cabinet.createdAt">{{ cabinet.createdAt | date:'dd/MM/yyyy' }}</small>
+              <small *ngIf="!cabinet.createdAt" class="text-muted">-</small>
+            </td>
+            <td data-label="Actions">
+              <div class="btn-group">
+                <button class="btn btn-edit" (click)="editCabinet(cabinet)" title="Modifier">
+                  <!-- Icon will be added via CSS -->
+                </button>
+                <button class="btn btn-delete" (click)="deleteCabinet(cabinet.id)" title="Supprimer">
+                  <!-- Icon will be added via CSS -->
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="table-footer">
+      <div class="pagination-info">
+        <small class="text-muted">
+          Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à 
+          {{ getMaxDisplayCount() }} sur 
+          {{ filteredCabinets.length }} cabinets
+        </small>
+      </div>
+      <nav class="pagination-nav">
+        <ul class="pagination">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button class="page-link" (click)="changePage(currentPage - 1)">
+              <!-- Icon will be added via CSS -->
+            </button>
+          </li>
+          
+          <li *ngFor="let page of getPages()" class="page-item" [class.active]="page === currentPage">
+            <button class="page-link" (click)="changePage(page)">{{ page }}</button>
+          </li>
+          
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <button class="page-link" (click)="changePage(currentPage + 1)">
+              <!-- Icon will be added via CSS -->
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

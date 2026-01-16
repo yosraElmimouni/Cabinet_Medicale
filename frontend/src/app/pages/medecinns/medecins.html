@@ -1,0 +1,285 @@
+<div class="doctors-container">
+  <!-- Background Animé -->
+  <div class="doctors-background">
+    <div class="floating-medical">
+      <div class="medical-symbol">🫀</div>
+      <div class="medical-symbol">🧠</div>
+      <div class="medical-symbol">🫁</div>
+      <div class="medical-symbol">👁️</div>
+    </div>
+    <div class="pulse-grid"></div>
+  </div>
+
+  <div class="doctors-content">
+    <!-- En-tête Hero -->
+    <section class="doctors-hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <i class="fas fa-star-of-life"></i>
+          <span>Équipe Médicale d'Excellence</span>
+        </div>
+        <h1 class="hero-title">
+          <span class="title-line">Rencontrez Notre</span>
+          <span class="title-line highlight">Équipe Médicale</span>
+        </h1>
+        <p class="hero-description">
+          Des professionnels de santé dévoués et expérimentés 
+          pour prendre soin de vous avec expertise et bienveillance.
+        </p>
+        
+        <!-- Statistiques -->
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-number">25+</div>
+            <div class="stat-label">Médecins</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">12</div>
+            <div class="stat-label">Spécialités</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">Satisfaction</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">15+</div>
+            <div class="stat-label">Ans d'expérience</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hero-visual">
+        <div class="medical-orb">
+          <div class="orb-core">
+            <i class="fas fa-user-md"></i>
+          </div>
+          <div class="orb-ring"></div>
+          <div class="orb-particle" *ngFor="let particle of particles"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtres et Recherche -->
+    <section class="filters-section">
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Rechercher un médecin..." 
+                 [(ngModel)]="searchQuery"
+                 (input)="filterDoctors()">
+        </div>
+        <button class="filter-btn" (click)="toggleFilters()">
+          <i class="fas fa-sliders-h"></i>
+          Filtres
+        </button>
+      </div>
+
+      <!-- Filtres Avancés -->
+      <div class="advanced-filters" [class.show]="showFilters">
+        <div class="filter-group">
+          <h4>Spécialité</h4>
+          <div class="filter-options">
+            <button class="filter-option" 
+                    *ngFor="let specialty of specialties"
+                    [class.active]="selectedSpecialties.includes(specialty.id)"
+                    (click)="toggleSpecialty(specialty.id)">
+              <i [class]="specialty.icon"></i>
+              {{ specialty.name }}
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>Disponibilité</h4>
+          <div class="filter-options">
+            <button class="filter-option" 
+                    [class.active]="availabilityFilter === 'today'"
+                    (click)="setAvailability('today')">
+              <i class="fas fa-bolt"></i>
+              Aujourd'hui
+            </button>
+            <button class="filter-option" 
+                    [class.active]="availabilityFilter === 'tomorrow'"
+                    (click)="setAvailability('tomorrow')">
+              <i class="fas fa-calendar-day"></i>
+              Demain
+            </button>
+            <button class="filter-option" 
+                    [class.active]="availabilityFilter === 'week'"
+                    (click)="setAvailability('week')">
+              <i class="fas fa-calendar-week"></i>
+              Cette semaine
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>Langues</h4>
+          <div class="filter-options">
+            <button class="filter-option" 
+                    *ngFor="let language of languages"
+                    [class.active]="selectedLanguages.includes(language)"
+                    (click)="toggleLanguage(language)">
+              <i class="fas fa-globe"></i>
+              {{ language }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grille des Médecins -->
+    <section class="doctors-grid-section">
+      <div class="section-header">
+        <h2>Nos Médecins Spécialistes</h2>
+        <p>{{ filteredDoctors.length }} médecins trouvés</p>
+      </div>
+
+      <div class="doctors-grid">
+        <div class="doctor-card" 
+             *ngFor="let doctor of filteredDoctors"
+             [class.featured]="doctor.featured"
+             (click)="viewDoctorProfile(doctor.id)">
+          
+          <!-- Badge Vedette -->
+          <div class="featured-badge" *ngIf="doctor.featured">
+            <i class="fas fa-star"></i>
+            Médecin Vedette
+          </div>
+
+          <!-- En-tête de la Carte -->
+          <div class="card-header">
+            <div class="doctor-avatar">
+              <img [src]="doctor.avatar" [alt]="'Dr. ' + doctor.name">
+              <div class="status-indicator" [class.online]="doctor.online"></div>
+            </div>
+            
+            <div class="doctor-main-info">
+              <h3>Dr. {{ doctor.name }}</h3>
+              <p class="specialty">{{ doctor.specialty }}</p>
+              <div class="experience">
+                <i class="fas fa-award"></i>
+                {{ doctor.experience }}
+              </div>
+            </div>
+
+            <button class="favorite-btn" (click)="toggleFavorite(doctor.id, $event)">
+              <i class="fas" [class.fa-heart]="doctor.favorite" [class.fa-heart-circle-plus]="!doctor.favorite"></i>
+            </button>
+          </div>
+
+          <!-- Évaluation -->
+          <div class="rating-section">
+            <div class="stars">
+              <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]"
+                 [class.filled]="star <= doctor.rating"></i>
+              <span class="rating-value">{{ doctor.rating }}/5</span>
+            </div>
+            <span class="reviews">({{ doctor.reviews }} avis)</span>
+          </div>
+
+          <!-- Compétences -->
+          <div class="skills-section">
+            <div class="skills-title">Expertises :</div>
+            <div class="skills-tags">
+              <span class="skill-tag" *ngFor="let skill of doctor.skills">{{ skill }}</span>
+            </div>
+          </div>
+
+          <!-- Disponibilités -->
+          <div class="availability-section">
+            <div class="availability-title">
+              <i class="fas fa-calendar-check"></i>
+              Prochaines disponibilités
+            </div>
+            <div class="time-slots">
+              <span class="time-slot" *ngFor="let slot of doctor.availability">
+                {{ slot }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Langues -->
+          <div class="languages-section">
+            <div class="languages-title">
+              <i class="fas fa-globe"></i>
+              Langues parlées
+            </div>
+            <div class="language-tags">
+              <span class="language-tag" *ngFor="let language of doctor.languages">
+                {{ language }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card-actions">
+            <button class="btn-profile" (click)="viewDoctorProfile(doctor.id, $event)">
+              <i class="fas fa-user"></i>
+              Voir le profil
+            </button>
+            <button class="btn-appointment" (click)="bookAppointment(doctor.id, $event)">
+              <i class="fas fa-calendar-plus"></i>
+              Prendre RDV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chargement Plus -->
+      <div class="load-more" *ngIf="hasMoreDoctors">
+        <button class="btn-load-more" (click)="loadMoreDoctors()">
+          <i class="fas fa-plus"></i>
+          Charger plus de médecins
+        </button>
+      </div>
+    </section>
+
+    <!-- Section Spécialités -->
+    <section class="specialties-section">
+      <div class="section-header">
+        <h2>Nos Spécialités Médicales</h2>
+        <p>Des soins spécialisés pour chaque besoin de santé</p>
+      </div>
+
+      <div class="specialties-grid">
+        <div class="specialty-card" 
+             *ngFor="let specialty of specialties"
+             (click)="filterBySpecialty(specialty.id)">
+          <div class="specialty-icon">
+            <i [class]="specialty.icon"></i>
+          </div>
+          <h3>{{ specialty.name }}</h3>
+          <p>{{ specialty.description }}</p>
+          <div class="doctors-count">
+            {{ specialty.doctorCount }} médecins
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Témoignages -->
+    <section class="testimonials-section">
+      <div class="section-header">
+        <h2>Ce que disent nos patients</h2>
+        <p>Retours d'expérience de nos patients satisfaits</p>
+      </div>
+
+      <div class="testimonials-slider">
+        <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+          <div class="testimonial-content">
+            <div class="quote-icon">"</div>
+            <p class="testimonial-text">{{ testimonial.text }}</p>
+            <div class="testimonial-author">
+              <img [src]="testimonial.avatar" [alt]="testimonial.author">
+              <div class="author-info">
+                <strong>{{ testimonial.author }}</strong>
+                <span>Patient du Dr. {{ testimonial.doctor }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
