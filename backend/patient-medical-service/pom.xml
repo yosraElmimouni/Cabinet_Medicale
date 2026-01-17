@@ -9,7 +9,7 @@
     </parent>
 
 	<groupId>com.exemple</groupId>
-	<artifactId>patient-medical-com.example.auth_service.service</artifactId>
+	<artifactId>patient-medical-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>patient-medical-com.example.auth_service.service</name>
 	<description>auth</description>

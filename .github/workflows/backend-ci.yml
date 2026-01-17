@@ -38,7 +38,13 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
+          cd backend
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=medical-clinic-backend \
             -Dsonar.projectName="Medical Clinic Backend"
-        working-directory: backend
+
+      - name: Build Docker Images
+        run: |
+          cd backend
+          docker build -t medical-auth-service --build-arg SERVICE_NAME=auth-service .
+          # Vous pouvez ajouter d'autres builds ou un push vers un registre ici

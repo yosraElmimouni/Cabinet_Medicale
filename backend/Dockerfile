@@ -1,8 +1,11 @@
 # Étape de build
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+
+# Copier le pom.xml racine
 COPY pom.xml .
-# Copier tous les modules
+
+# Copier tous les modules nécessaires pour le build
 COPY auth-service auth-service
 COPY cabinet-service cabinet-service
 COPY patient-medical-service patient-medical-service
@@ -15,9 +18,17 @@ COPY api-gateway api-gateway
 # Build de tous les modules
 RUN mvn clean package -DskipTests
 
-# Étape finale (Exemple pour un service générique, sera surchargé par docker-compose)
+# Étape finale
 FROM eclipse-temurin:17-jre-jammy
+
+# Créer un utilisateur non-root pour la sécurité (SonarQube S6471)
+RUN addgroup --system spring && adduser --system spring --ingroup spring
+USER spring:spring
+
 WORKDIR /app
 ARG SERVICE_NAME
-COPY --from=build /app/${SERVICE_NAME}/target/*.jar app.jar
+
+# Copier le jar construit depuis l'étape de build
+COPY --from=build --chown=spring:spring /app/${SERVICE_NAME}/target/*.jar app.jar
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

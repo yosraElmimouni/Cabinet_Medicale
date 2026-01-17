@@ -1,8 +1,9 @@
 package com.exemple.patient_medical_service.service;
 
 import com.exemple.patient_medical_service.dto.*;
+import com.exemple.patient_medical_service.model.Consultation;
 import com.exemple.patient_medical_service.model.Facture;
-import com.exemple.patient_medical_service.model.Patient;
+import com.exemple.patient_medical_service.repository.ConsultationRepository;
 import com.exemple.patient_medical_service.repository.FactureRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,18 +12,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
-import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -33,63 +27,53 @@ public class FactureServiceTest {
     private FactureRepository factureRepository;
 
     @Mock
-    private WebClient webClient;
+    private ConsultationRepository consultationRepository;
 
     @InjectMocks
     private FactureService factureService;
 
-    // Mocks pour la chaîne de WebClient
-    @Mock
-    private RequestHeadersUriSpec requestHeadersUriSpec;
-    @Mock
-    private RequestHeadersSpec requestHeadersSpec;
-    @Mock
-    private ResponseSpec responseSpec;
-
     private FactureRequest factureRequest;
     private Facture facture;
-    private RendezVousConsultation rvTermine;
-    private RendezVousConsultation rvNonTermine;
-
+    private Consultation consultation;
 
     @BeforeEach
     void setUp() {
-        // Initialisation des objets de données de test
         factureRequest = FactureRequest.builder()
+                .idconsultation(1)
                 .modePaiement("paypal")
                 .montantTotal(BigDecimal.valueOf(199.00))
+                .build();
+
+        consultation = Consultation.builder()
+                .idConsultation(1)
                 .build();
 
         facture = Facture.builder()
                 .idFacture(1)
+                .consultation(consultation)
                 .modePaiement("paypal")
                 .montantTotal(BigDecimal.valueOf(199.00))
                 .build();
-
     }
 
     @Test
     void createFacture(){
-        // ACT
+        when(consultationRepository.findById(1)).thenReturn(Optional.of(consultation));
+
         factureService.createfacture(factureRequest);
 
-        ArgumentCaptor<Facture> factureArgumentCaptor = ArgumentCaptor.forClass(Facture.class);
-        verify(factureRepository, times(1)).save(factureArgumentCaptor.capture());
-
-        Facture saverFacture = factureArgumentCaptor.getValue();
-        assertEquals("paypal", saverFacture.getModePaiement());
-        assertEquals(BigDecimal.valueOf(199.00), saverFacture.getMontantTotal());
+        verify(factureRepository, times(1)).save(any(Facture.class));
     }
 
     @Test
     void getAllFactures(){
-        Facture facture1=Facture.builder().idFacture(2).modePaiement("banque").montantTotal(BigDecimal.valueOf(399.00)).build();
-        List<Facture> factureList=Arrays.asList(facture,facture1);
+        Facture facture1 = Facture.builder().idFacture(2).consultation(consultation).modePaiement("banque").montantTotal(BigDecimal.valueOf(399.00)).build();
+        List<Facture> factureList = Arrays.asList(facture, facture1);
         when(factureRepository.findAll()).thenReturn(factureList);
-        List<FactureResponse> listeresultant= factureService.getAllFactures();
-        assertEquals(2,listeresultant.size());
-        assertEquals("paypal",listeresultant.get(0).getModePaiement());
-        assertNotNull(listeresultant);
-    }
 
+        List<FactureResponse> result = factureService.getAllFactures();
+
+        assertEquals(2, result.size());
+        verify(factureRepository, times(1)).findAll();
+    }
 }

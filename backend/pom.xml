@@ -31,8 +31,6 @@
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
-        <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
-        <sonar.cpd.exclusions>**/*</sonar.cpd.exclusions>
     </properties>
 
     <dependencyManagement>

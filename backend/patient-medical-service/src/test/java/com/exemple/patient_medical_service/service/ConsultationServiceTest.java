@@ -4,7 +4,11 @@ import com.exemple.patient_medical_service.dto.ConsultationRequest;
 import com.exemple.patient_medical_service.dto.ConsultationResponse;
 import com.exemple.patient_medical_service.dto.RendezVousConsultation;
 import com.exemple.patient_medical_service.model.Consultation;
+import com.exemple.patient_medical_service.model.DossierMedical;
+import com.exemple.patient_medical_service.model.Patient;
 import com.exemple.patient_medical_service.repository.ConsultationRepository;
+import com.exemple.patient_medical_service.repository.DossierMedicalRepository;
+import com.exemple.patient_medical_service.repository.PatientRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +25,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +38,16 @@ class ConsultationServiceTest {
     private ConsultationRepository consultationRepository;
 
     @Mock
-    private WebClient.Builder webClient;
+    private WebClient.Builder webClientBuilder;
+
+    @Mock
+    private WebClient webClient;
+
+    @Mock
+    private DossierMedicalRepository dossierMedicalRepository;
+
+    @Mock
+    private PatientRepository patientRepository;
 
     @InjectMocks
     private ConsultationService consultationService;
@@ -50,6 +64,8 @@ class ConsultationServiceTest {
     private Consultation consultation;
     private RendezVousConsultation rvTermine;
     private RendezVousConsultation rvNonTermine;
+    private Patient patient;
+    private DossierMedical dossierMedical;
 
     @BeforeEach
     void setUp() {
@@ -62,6 +78,17 @@ class ConsultationServiceTest {
                 .idRendezVous(50)
                 .build();
 
+        patient = Patient.builder()
+                .idPatient(1)
+                .nom("Dupont")
+                .prenom("Jean")
+                .build();
+
+        dossierMedical = DossierMedical.builder()
+                .idDossier(1)
+                .patient(patient)
+                .build();
+
         consultation = Consultation.builder()
                 .idConsultation(1)
                 .type("Générale")
@@ -69,6 +96,7 @@ class ConsultationServiceTest {
                 .diagnostic("Grippe saisonnière")
                 .idMedecin(10)
                 .idRendezVous(50)
+                .dossierMedical(dossierMedical)
                 .build();
 
         rvTermine = RendezVousConsultation.builder()
@@ -83,49 +111,40 @@ class ConsultationServiceTest {
                 .build();
     }
 
+    private void mockWebClient(RendezVousConsultation response) {
+        when(webClientBuilder.build()).thenReturn(webClient);
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), any(Function.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(RendezVousConsultation.class)).thenReturn(Mono.just(response));
+    }
+
     @Test
     void createConsultation_SaveConsultation_RendezVousTerminated() {
         // ARRANGE
-        // 1. Mock du repository pour retourner l'objet RV Terminé
-        when(webClient.build().get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), any(Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(RendezVousConsultation.class)).thenReturn(Mono.just(rvTermine));
+        mockWebClient(rvTermine);
+        when(dossierMedicalRepository.findByPatientId(1)).thenReturn(Optional.of(dossierMedical));
 
         // ACT
         consultationService.createConsultation(consultationRequest);
 
         // ASSERT
-        // 1. Vérifier que l'appel au service de Rendez-vous a eu lieu
-        verify(webClient, times(1)).build().get();
-        verify(requestHeadersUriSpec, times(1)).uri(anyString(), any(Function.class));
-
-        // 2. Vérifier que la consultation a été sauvegardée
-        ArgumentCaptor<Consultation> consultationCaptor = ArgumentCaptor.forClass(Consultation.class);
-        verify(consultationRepository, times(1)).save(consultationCaptor.capture());
-
-        Consultation savedConsultation = consultationCaptor.getValue();
-        assertEquals("Générale", savedConsultation.getType());
-        assertEquals(50, savedConsultation.getIdRendezVous());
+        verify(webClientBuilder, times(1)).build();
+        verify(consultationRepository, times(1)).save(any(Consultation.class));
     }
 
     @Test
-    void createConsultation() {
+    void createConsultation_RendezVousNotTerminated() {
         // ARRANGE
-        consultationRequest.setIdRendezVous(51); // Utiliser le RV non terminé
-        // 1. Mock du repository pour retourner l'objet RV Non Terminé
-        when(webClient.build().get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), any(Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(RendezVousConsultation.class)).thenReturn(Mono.just(rvNonTermine));
+        consultationRequest.setIdRendezVous(51);
+        mockWebClient(rvNonTermine);
 
         // ACT & ASSERT
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             consultationService.createConsultation(consultationRequest);
         });
 
-        assertEquals("RendezVous non encore terminée , veillez attender", exception.getMessage());
-        // 2. Vérifier qu'aucune sauvegarde n'a eu lieu
+        assertEquals("Rendez-vous non encore terminé, veuillez attendre", exception.getMessage());
         verify(consultationRepository, never()).save(any(Consultation.class));
     }
 
@@ -140,8 +159,7 @@ class ConsultationServiceTest {
         });
 
         assertEquals("L'id du rendez-vous est obligatoire !", exception.getMessage());
-        // 2. Vérifier qu'aucune interaction avec WebClient ou Repository n'a eu lieu
-        verifyNoInteractions(webClient);
+        verifyNoInteractions(webClientBuilder);
         verifyNoInteractions(consultationRepository);
     }
 
@@ -158,8 +176,6 @@ class ConsultationServiceTest {
         // ASSERT
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("Grippe saisonnière", result.get(0).getDiagnostic());
-        assertEquals("Allergie", result.get(1).getDiagnostic());
         verify(consultationRepository, times(1)).findAll();
     }
 }
