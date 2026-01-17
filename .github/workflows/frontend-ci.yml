@@ -43,3 +43,4 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.coverage.exclusions=**/*
             -Dsonar.cpd.exclusions=**/*
+
